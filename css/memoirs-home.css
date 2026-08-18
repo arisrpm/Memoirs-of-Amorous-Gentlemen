@@ -142,6 +142,7 @@
 
 #moag-topper h3 {
     color: #fffada !important;
+    font-size: 50px;
     font-family: "tt-ricks", serif;
     font-weight: 500;
     font-style: normal;
@@ -150,6 +151,28 @@
     line-height: 1;
 }
 
+#moag-topper h3 a {
+    font-size: 40%;
+    font-family: var(--moag-serif);
+    color: var(--moag-text);
+    background: var(--moag-btn-bg);
+    border: none;
+    padding: 10px;
+    font-weight: 600;
+    border-radius: 0;
+    letter-spacing: .06em;
+    line-height: 1;
+    text-transform: uppercase;
+    white-space: nowrap;
+    cursor: pointer;
+    margin: 0 !important;
+    transition: background .2s ease;
+    vertical-align: middle;
+    position: relative;
+    top: -3px;
+}
+
+
 #moag-topper h3 span:first-child {
     font-size: 75%;
     position: relative;
@@ -157,8 +180,8 @@
 }
   
 #moag-topper h3 img {
-    height: 25px;
-    margin: 0;
+    height: 36px;
+    margin: 0 10px 0 0;
     padding: 0;
 }
 
@@ -176,13 +199,15 @@
 
 @media (max-width: 1294px) {
   #moag-topper h3 {
-    font-size: 2.6vw;
+    
   }  
 }
 
 
 @media (max-width: 1090px) {
-  #moag-topper h3 {font-size: 28px;}
+  #moag-topper h3 {
+
+  }
 
   #moag-topper .form-item.field input[type="email"] {
       min-width: 270px !important;
@@ -191,7 +216,7 @@
 
 @media (max-width: 1063px) {
   #moag-topper h3 {
-    font-size: 2.6vw;
+    
   }  
 }
 
@@ -216,7 +241,7 @@
 
 @media (max-width: 845px) {
   #moag-topper h3 {
-        font-size: 25px;
+        
     }
 }
 
@@ -410,10 +435,14 @@
   }
 
   #moag-topper h3 {
-    font-size: 4.5vw;
-    font-family: 'adobe-jenson-pro-caption';
-    font-weight: 600;
+
   }  
+
+  #moag-topper h3 a {
+    display: block;
+    top: 0;
+    margin-top: 5px;
+ }
 
   #moag-topper h3 span {
     display: none;
@@ -454,7 +483,7 @@
 
 @media (max-width: 500px) {
   #moag-topper h3 {
-    font-size: 5.5vw;
+    font-size: 8.5vw;
   }
 
   #moag-topper .form-item.field input[type="email"] {
