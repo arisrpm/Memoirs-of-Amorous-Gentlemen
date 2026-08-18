@@ -162,6 +162,12 @@
     padding: 0;
 }
 
+@media (max-width: 1304px) {
+  #moag-topper .form-item.field input[type="email"] {
+      min-width: 330px !important;
+  }
+}
+
 @media (max-width: 1600px) {
   #moag-topper .form-item.field input[type="email"] {
       min-width: 400px !important;
@@ -404,7 +410,7 @@
   }
 
   #moag-topper h3 {
-    font-size: 5vw;
+    font-size: 4.5vw;
     font-family: 'adobe-jenson-pro-caption';
     font-weight: 600;
   }  
@@ -429,7 +435,7 @@
   #moag-topper .form-item.field input[type="email"] {
     flex: 1 1 100%;
     width: 100%;
-    min-width: 350px !important;
+    min-width: 230px !important;
   }
 
   #moag-topper .form-button-wrapper {
