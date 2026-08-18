@@ -332,7 +332,7 @@
    *  1 = next
    * -1 = previous
    *
-   * Navigation wraps around the cast array.
+   * Navigation stops at the beginning/end of the cast array.
    */
   const getAdjacentBioIndex = (
     startIndex,
@@ -344,21 +344,12 @@
       return -1;
     }
 
-    let index = startIndex;
-
     for (
-      let checked = 0;
-      checked < total;
-      checked++
+      let index = startIndex + direction;
+      index >= 0 && index < total;
+      index += direction
     ) {
-      index =
-        (index + direction + total) %
-        total;
-
-      if (
-        index !== startIndex &&
-        hasBiography(castData[index])
-      ) {
+      if (hasBiography(castData[index])) {
         return index;
       }
     }
@@ -665,24 +656,26 @@
         '[data-modal-next]'
       );
 
-    const biographyCount =
-      getBiographyCount();
+    const previousIndex =
+      getAdjacentBioIndex(
+        currentCastIndex,
+        -1
+      );
 
-    /**
-     * With zero or one biography there is
-     * nowhere useful to navigate.
-     */
-    const shouldShowNavigation =
-      biographyCount > 1;
+    const nextIndex =
+      getAdjacentBioIndex(
+        currentCastIndex,
+        1
+      );
 
     if (previousButton) {
       previousButton.hidden =
-        !shouldShowNavigation;
+        previousIndex < 0;
     }
 
     if (nextButton) {
       nextButton.hidden =
-        !shouldShowNavigation;
+        nextIndex < 0;
     }
   };
 
