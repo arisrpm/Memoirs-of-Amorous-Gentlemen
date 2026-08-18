@@ -1,109 +1,143 @@
 (() => {
-	'use strict';
+  'use strict';
 
-	/**
-	 * Memoirs of Amorous Gentlemen
-	 * Cast Module
-	 *
-	 * Requires:
-	 * memoirs-core.js
-	 */
+  /**
+   * Memoirs of Amorous Gentlemen
+   * Cast Grid
+   */
 
-	// Prevent duplicate initialization.
-	if (window.MemoirsCast?.initialized) {
-		return;
-	}
+  const MODULE = '[Memoirs Cast]';
+  const SELECTOR = '#moag-cast';
 
-	const Cast = {
+  // Prevent duplicate initialization.
+  if (window.MemoirsCast?.initialized) {
+    return;
+  }
 
-		initialized: false,
+  // ------------------------------------------------------------
+  // HELPERS
+  // ------------------------------------------------------------
 
-		config: {
-			sheetName: 'Cast'
-		},
+  const escapeHTML = (value = '') => {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  };
 
-		/**
-		 * Initialize Cast module.
-		 */
-		async init() {
+  // ------------------------------------------------------------
+  // CAST CARD
+  // ------------------------------------------------------------
 
-			if (!window.Memoirs) {
-				console.error('[Memoirs Cast] Core is not available.');
-				return;
-			}
+  const renderCastCard = (member, index) => {
+    const name = escapeHTML(member.name || '');
+    const role = escapeHTML(member.role || '');
+    const image = escapeHTML(member.image_url || '');
 
-			this.initialized = true;
+    return `
+      <article
+        class="moag-cast__member"
+        data-cast-index="${index}"
+      >
+        <button
+          class="moag-cast__trigger"
+          type="button"
+          data-cast-index="${index}"
+          aria-label="View ${name}"
+        >
 
-			try {
+          <div class="moag-cast__image">
+            ${
+              image
+                ? `<img src="${image}" alt="${name}" loading="lazy">`
+                : `<div class="moag-cast__image-placeholder"></div>`
+            }
+          </div>
 
-				const rows = await Memoirs.getSheet(this.config.sheetName);
+          <div class="moag-cast__info">
+            <h3 class="moag-cast__name">${name}</h3>
 
-				const cast = this.parseRows(rows);
+            ${
+              role
+                ? `<div class="moag-cast__role">${role}</div>`
+                : ''
+            }
+          </div>
 
-				console.log('[Memoirs Cast] Cast data:', cast);
+        </button>
+      </article>
+    `;
+  };
 
-			} catch (error) {
+  // ------------------------------------------------------------
+  // GRID
+  // ------------------------------------------------------------
 
-				console.error(
-					'[Memoirs Cast] Unable to load Cast data.',
-					error
-				);
+  const renderCast = (container, cast) => {
+    if (!cast.length) {
+      console.warn(`${MODULE} No cast members found.`);
+      return;
+    }
 
-			}
+    container.innerHTML = `
+      <div class="moag-cast">
+        <div class="moag-cast__grid">
+          ${cast.map(renderCastCard).join('')}
+        </div>
+      </div>
+    `;
+  };
 
-		},
+  // ------------------------------------------------------------
+  // INIT
+  // ------------------------------------------------------------
 
-		/**
-		 * Convert Google Sheet rows into Cast objects.
-		 */
-		parseRows(rows) {
+  const init = async () => {
+    const container = document.querySelector(SELECTOR);
 
-			if (!Array.isArray(rows) || rows.length < 2) {
-				return [];
-			}
+    // Script can be loaded globally.
+    // If #moag-cast isn't on this page, simply do nothing.
+    if (!container) {
+      return;
+    }
 
-			const headers = rows[0].map(header =>
-				String(header)
-					.trim()
-					.toLowerCase()
-					.replace(/\s+/g, '_')
-					.replace(/[()]/g, '')
-			);
+    if (!window.Memoirs) {
+      console.error(`${MODULE} Memoirs core is not available.`);
+      return;
+    }
 
-			return rows
-				.slice(1)
-				.filter(row => row.some(cell => String(cell).trim()))
-				.map(row => {
+    try {
+      const cast = await Memoirs.getObjects('Cast');
 
-					const item = {};
+      console.log(`${MODULE} Cast data:`, cast);
 
-					headers.forEach((header, index) => {
-						item[header] = row[index] ?? '';
-					});
+      renderCast(container, cast);
 
-					return item;
+      console.log(`${MODULE} Rendered ${cast.length} cast member(s).`);
+    } catch (error) {
+      console.error(`${MODULE} Unable to render cast.`, error);
+    }
+  };
 
-				});
+  // ------------------------------------------------------------
+  // PUBLIC MODULE
+  // ------------------------------------------------------------
 
-		}
+  window.MemoirsCast = {
+    initialized: true,
+    init
+  };
 
-	};
+  // ------------------------------------------------------------
+  // START
+  // ------------------------------------------------------------
 
-	window.MemoirsCast = Cast;
-
-	// Initialize after DOM is available.
-	if (document.readyState === 'loading') {
-
-		document.addEventListener(
-			'DOMContentLoaded',
-			() => Cast.init(),
-			{ once: true }
-		);
-
-	} else {
-
-		Cast.init();
-
-	}
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 
 })();
