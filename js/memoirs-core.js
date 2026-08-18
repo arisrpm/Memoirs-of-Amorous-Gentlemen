@@ -303,194 +303,263 @@
    * The site's CSS can then completely control presentation.
    */
   function cleanGoogleDocHTML(html) {
-    if (!html) {
-      return '';
+  if (!html) {
+    return '';
+  }
+
+  const parser = new DOMParser();
+
+  const doc = parser.parseFromString(
+    html,
+    'text/html'
+  );
+
+  const body = doc.body;
+
+  if (!body) {
+    return '';
+  }
+
+  // ----------------------------------------------------------
+  // READ GOOGLE'S CSS BEFORE REMOVING IT
+  // ----------------------------------------------------------
+
+  const styleText = Array.from(
+    doc.querySelectorAll('style')
+  )
+    .map(style => style.textContent || '')
+    .join('\n');
+
+  /**
+   * Determine whether a Google-generated class contains
+   * italic and/or bold formatting.
+   */
+  const getClassFormatting = className => {
+    if (!className || !styleText) {
+      return {
+        italic: false,
+        bold: false,
+      };
     }
 
-    const parser = new DOMParser();
-
-    const doc = parser.parseFromString(
-      html,
-      'text/html'
+    /**
+     * Escape the class name so it is safe inside RegExp.
+     */
+    const escapedClass = className.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      '\\$&'
     );
 
-    const body = doc.body;
+    /**
+     * Google Docs normally outputs rules such as:
+     *
+     * .c1 {
+     *   font-style: italic;
+     * }
+     */
+    const ruleRegex = new RegExp(
+      `\\.${escapedClass}(?:[^,{]*)?\\s*\\{([^}]*)\\}`,
+      'gi'
+    );
 
-    if (!body) {
-      return '';
-    }
+    let italic = false;
+    let bold = false;
+    let match;
 
-    // ----------------------------------------------------------
-    // REMOVE DOCUMENT-LEVEL JUNK
-    // ----------------------------------------------------------
-
-    body.querySelectorAll(
-      'script, style, meta, link, title'
-    ).forEach(element => {
-      element.remove();
-    });
-
-    // ----------------------------------------------------------
-    // DETECT GOOGLE DOC FORMATTING
-    // BEFORE REMOVING CLASSES / STYLES
-    // ----------------------------------------------------------
-
-    body.querySelectorAll('span').forEach(span => {
-      let isItalic = false;
-      let isBold = false;
-
-      /**
-       * First inspect inline styles.
-       */
-      const inlineStyle =
-        span.getAttribute('style') || '';
+    while (
+      (match = ruleRegex.exec(styleText)) !== null
+    ) {
+      const declarations = match[1];
 
       if (
-        /font-style\s*:\s*italic/i.test(
-          inlineStyle
+        /font-style\s*:\s*(italic|oblique)/i.test(
+          declarations
         )
       ) {
-        isItalic = true;
+        italic = true;
       }
 
-      const inlineWeight = inlineStyle.match(
+      const weightMatch = declarations.match(
         /font-weight\s*:\s*([^;]+)/i
       );
 
-      if (inlineWeight) {
-        const weight =
-          inlineWeight[1].trim().toLowerCase();
+      if (weightMatch) {
+        const weight = weightMatch[1]
+          .trim()
+          .toLowerCase();
 
         if (
           weight === 'bold' ||
           weight === 'bolder' ||
           parseInt(weight, 10) >= 600
         ) {
-          isBold = true;
+          bold = true;
         }
       }
+    }
 
-      /**
-       * Google Docs frequently puts formatting inside
-       * generated CSS classes rather than inline styles.
-       *
-       * getComputedStyle() lets us inspect the resolved
-       * formatting while Google's <style> block still exists.
-       */
-      try {
-        const computed =
-          doc.defaultView?.getComputedStyle(span);
+    return {
+      italic,
+      bold,
+    };
+  };
 
-        if (computed) {
-          if (
-            computed.fontStyle === 'italic' ||
-            computed.fontStyle === 'oblique'
-          ) {
-            isItalic = true;
-          }
+  // ----------------------------------------------------------
+  // DETECT FORMATTING
+  // ----------------------------------------------------------
 
-          const computedWeight =
-            computed.fontWeight;
+  body.querySelectorAll('span').forEach(span => {
+    let isItalic = false;
+    let isBold = false;
 
-          if (
-            computedWeight === 'bold' ||
-            computedWeight === 'bolder' ||
-            parseInt(computedWeight, 10) >= 600
-          ) {
-            isBold = true;
-          }
-        }
-      } catch (_) {
-        // Computed styles are supplemental only.
+    // --------------------------------------------------------
+    // INLINE STYLE
+    // --------------------------------------------------------
+
+    const inlineStyle =
+      span.getAttribute('style') || '';
+
+    if (
+      /font-style\s*:\s*(italic|oblique)/i.test(
+        inlineStyle
+      )
+    ) {
+      isItalic = true;
+    }
+
+    const inlineWeight = inlineStyle.match(
+      /font-weight\s*:\s*([^;]+)/i
+    );
+
+    if (inlineWeight) {
+      const weight = inlineWeight[1]
+        .trim()
+        .toLowerCase();
+
+      if (
+        weight === 'bold' ||
+        weight === 'bolder' ||
+        parseInt(weight, 10) >= 600
+      ) {
+        isBold = true;
+      }
+    }
+
+    // --------------------------------------------------------
+    // GOOGLE-GENERATED CLASSES
+    // --------------------------------------------------------
+
+    span.classList.forEach(className => {
+      const formatting =
+        getClassFormatting(className);
+
+      if (formatting.italic) {
+        isItalic = true;
       }
 
-      if (!isItalic && !isBold) {
-        return;
+      if (formatting.bold) {
+        isBold = true;
       }
-
-      /**
-       * Preserve the span's contents rather than using
-       * textContent so nested links/etc. survive.
-       */
-      let replacement;
-
-      if (isItalic && isBold) {
-        replacement =
-          doc.createElement('strong');
-
-        const em = doc.createElement('em');
-
-        while (span.firstChild) {
-          em.appendChild(span.firstChild);
-        }
-
-        replacement.appendChild(em);
-      } else if (isItalic) {
-        replacement =
-          doc.createElement('em');
-
-        while (span.firstChild) {
-          replacement.appendChild(
-            span.firstChild
-          );
-        }
-      } else {
-        replacement =
-          doc.createElement('strong');
-
-        while (span.firstChild) {
-          replacement.appendChild(
-            span.firstChild
-          );
-        }
-      }
-
-      span.replaceWith(replacement);
     });
 
-    // ----------------------------------------------------------
-    // CLEAN GOOGLE PRESENTATION ATTRIBUTES
-    // ----------------------------------------------------------
+    // Nothing semantic to preserve.
+    if (!isItalic && !isBold) {
+      return;
+    }
 
-    body.querySelectorAll('*').forEach(element => {
-      element.removeAttribute('class');
-      element.removeAttribute('id');
-      element.removeAttribute('style');
+    // --------------------------------------------------------
+    // CONVERT TO SEMANTIC HTML
+    // --------------------------------------------------------
 
-      /**
-       * Strip Google's extra presentation attributes while
-       * preserving useful link attributes.
-       */
-      element.removeAttribute('dir');
-    });
+    let replacement;
 
-    // ----------------------------------------------------------
-    // CLEAN LINKS
-    // ----------------------------------------------------------
+    if (isItalic && isBold) {
+      replacement =
+        doc.createElement('strong');
 
-    body.querySelectorAll('a').forEach(link => {
-      const href = link.getAttribute('href');
+      const em =
+        doc.createElement('em');
 
-      if (!href) {
-        return;
+      while (span.firstChild) {
+        em.appendChild(
+          span.firstChild
+        );
       }
 
-      /**
-       * Open external biography links in a new tab.
-       */
-      link.setAttribute(
-        'target',
-        '_blank'
-      );
+      replacement.appendChild(em);
+    }
 
-      link.setAttribute(
-        'rel',
-        'noopener noreferrer'
-      );
-    });
+    else if (isItalic) {
+      replacement =
+        doc.createElement('em');
 
-    return body.innerHTML.trim();
-  }
+      while (span.firstChild) {
+        replacement.appendChild(
+          span.firstChild
+        );
+      }
+    }
+
+    else if (isBold) {
+      replacement =
+        doc.createElement('strong');
+
+      while (span.firstChild) {
+        replacement.appendChild(
+          span.firstChild
+        );
+      }
+    }
+
+    span.replaceWith(replacement);
+  });
+
+  // ----------------------------------------------------------
+  // REMOVE GOOGLE DOCUMENT JUNK
+  // ----------------------------------------------------------
+
+  doc.querySelectorAll(
+    'script, style, meta, link, title'
+  ).forEach(element => {
+    element.remove();
+  });
+
+  // ----------------------------------------------------------
+  // CLEAN PRESENTATION ATTRIBUTES
+  // ----------------------------------------------------------
+
+  body.querySelectorAll('*').forEach(element => {
+    element.removeAttribute('class');
+    element.removeAttribute('id');
+    element.removeAttribute('style');
+    element.removeAttribute('dir');
+  });
+
+  // ----------------------------------------------------------
+  // CLEAN LINKS
+  // ----------------------------------------------------------
+
+  body.querySelectorAll('a').forEach(link => {
+    const href =
+      link.getAttribute('href');
+
+    if (!href) {
+      return;
+    }
+
+    link.setAttribute(
+      'target',
+      '_blank'
+    );
+
+    link.setAttribute(
+      'rel',
+      'noopener noreferrer'
+    );
+  });
+
+  return body.innerHTML.trim();
+}
 
   // ------------------------------------------------------------
   // GOOGLE DRIVE IMAGES
