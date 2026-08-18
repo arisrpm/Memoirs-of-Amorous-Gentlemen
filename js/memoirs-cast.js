@@ -35,28 +35,62 @@
     return escapeHTML(value);
   };
 
+  /**
+   * Split a full name so the first/middle names appear on
+   * the first line and the final name appears on the second.
+   *
+   * Example:
+   * "Sophia Anne Caruso"
+   *
+   * firstName: "Sophia Anne"
+   * lastName:  "Caruso"
+   */
+  const splitName = (fullName = '') => {
+    const parts = String(fullName)
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+
+    if (parts.length <= 1) {
+      return {
+        firstName: parts[0] || '',
+        lastName: '',
+      };
+    }
+
+    return {
+      firstName: parts.slice(0, -1).join(' '),
+      lastName: parts[parts.length - 1],
+    };
+  };
+
+  /**
+   * Return escaped split-name values for output.
+   */
+  const getDisplayName = member => {
+    const {
+      firstName,
+      lastName,
+    } = splitName(member.name || '');
+
+    return {
+      firstName: escapeHTML(firstName),
+      lastName: escapeHTML(lastName),
+      fullName: escapeHTML(member.name || ''),
+    };
+  };
+
   // ------------------------------------------------------------
   // CAST CARD
   // ------------------------------------------------------------
 
-
-
-    const splitName = (fullName = '') => {
-        const parts = String(fullName).trim().split(/\s+/);
-        if (parts.length <= 1) {
-            return {
-            firstName: parts[0] || '',
-            lastName: ''
-            };
-        }
-        return {
-            firstName: parts.slice(0, -1).join(' '),
-            lastName: parts[parts.length - 1]
-        };
-    };
-
   const renderCastCard = (member, index) => {
-    const name = escapeHTML(member.name || '');
+    const {
+      firstName,
+      lastName,
+      fullName,
+    } = getDisplayName(member);
+
     const role = escapeHTML(member.role || '');
 
     const image = escapeAttribute(
@@ -72,7 +106,7 @@
           class="moag-cast__trigger"
           type="button"
           data-cast-index="${index}"
-          aria-label="View ${name}"
+          aria-label="View ${fullName}"
           aria-haspopup="dialog"
         >
 
@@ -82,7 +116,7 @@
                 ? `
                   <img
                     src="${image}"
-                    alt="${name}"
+                    alt="${fullName}"
                     loading="lazy"
                   >
                 `
@@ -95,7 +129,19 @@
           <div class="moag-cast__info">
 
             <h3 class="moag-cast__name">
-              ${name}
+              <span class="moag-cast__first-name">
+                ${firstName}
+              </span>
+
+              ${
+                lastName
+                  ? `
+                    <span class="moag-cast__last-name">
+                      ${lastName}
+                    </span>
+                  `
+                  : ''
+              }
             </h3>
 
             ${
@@ -168,7 +214,10 @@
       });
     });
 
-    if (member.website && Memoirs.isValidUrl(member.website)) {
+    if (
+      member.website &&
+      Memoirs.isValidUrl(member.website)
+    ) {
       links.push({
         label: 'Website',
         url: member.website,
@@ -267,7 +316,12 @@
   // ------------------------------------------------------------
 
   const renderModalContent = (member, bioHTML = '') => {
-    const name = escapeHTML(member.name || '');
+    const {
+      firstName,
+      lastName,
+      fullName,
+    } = getDisplayName(member);
+
     const role = escapeHTML(member.role || '');
 
     const image = escapeAttribute(
@@ -287,7 +341,7 @@
                 ? `
                   <img
                     src="${image}"
-                    alt="${name}"
+                    alt="${fullName}"
                   >
                 `
                 : `
@@ -306,7 +360,19 @@
               class="moag-cast-modal__name"
               id="moag-cast-modal-title"
             >
-              ${name}
+              <span class="moag-cast-modal__first-name">
+                ${firstName}
+              </span>
+
+              ${
+                lastName
+                  ? `
+                    <span class="moag-cast-modal__last-name">
+                      ${lastName}
+                    </span>
+                  `
+                  : ''
+              }
             </h2>
 
             ${
@@ -324,7 +390,11 @@
           <div class="moag-cast-modal__bio">
             ${
               bioHTML ||
-              `<p class="moag-cast-modal__loading">Loading biography...</p>`
+              `
+                <p class="moag-cast-modal__loading">
+                  Loading biography...
+                </p>
+              `
             }
           </div>
 
@@ -353,8 +423,10 @@
 
     lastTrigger = trigger || null;
 
-    // Render immediately so the modal opens without waiting
-    // for the Google Doc request.
+    /**
+     * Render immediately so the modal opens without waiting
+     * for the Google Doc request.
+     */
     content.innerHTML = renderModalContent(member);
 
     modalElement.hidden = false;
@@ -384,6 +456,22 @@
     }
 
     try {
+      /**
+       * Memoirs.getGoogleDoc() returns cleaned HTML.
+       *
+       * IMPORTANT:
+       * Do NOT escape this HTML. The core has already removed
+       * Google Docs presentation markup while preserving useful
+       * semantic markup such as:
+       *
+       * <p>
+       * <em>
+       * <strong>
+       * <a>
+       * <ul>
+       * <ol>
+       * <li>
+       */
       const bioHTML = await Memoirs.getGoogleDoc(
         member.bio
       );
@@ -392,7 +480,9 @@
        * The user may have closed the modal while the Google
        * Doc was loading.
        */
-      if (!modalElement.classList.contains('is-open')) {
+      if (
+        !modalElement.classList.contains('is-open')
+      ) {
         return;
       }
 
@@ -435,7 +525,9 @@
     modal.classList.remove('is-open');
     modal.hidden = true;
 
-    document.body.classList.remove('moag-modal-open');
+    document.body.classList.remove(
+      'moag-modal-open'
+    );
 
     if (lastTrigger) {
       lastTrigger.focus();
@@ -491,10 +583,14 @@
   // ------------------------------------------------------------
 
   const init = async () => {
-    const container = document.querySelector(SELECTOR);
+    const container = document.querySelector(
+      SELECTOR
+    );
 
-    // Script can be loaded globally.
-    // If #moag-cast isn't on this page, simply do nothing.
+    /**
+     * Script can be loaded globally.
+     * If #moag-cast isn't on this page, simply do nothing.
+     */
     if (!container) {
       return;
     }
@@ -515,7 +611,10 @@
         castData
       );
 
-      renderCast(container, castData);
+      renderCast(
+        container,
+        castData
+      );
 
       bindEvents(container);
 
