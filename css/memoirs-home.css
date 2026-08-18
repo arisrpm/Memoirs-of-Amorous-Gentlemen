@@ -136,12 +136,16 @@
   margin: 0 0 12px;
 }
 
+#moag-topper .sqs-site-style-form {
+    margin-top: 6px;
+}
+
 #moag-topper h3 {
     color: #fffada !important;
     font-family: "tt-ricks", serif;
     font-weight: 500;
     font-style: normal;
-    margin: 0;
+    margin: 5px 0 0;
     padding: 0;
     line-height: 1;
 }
