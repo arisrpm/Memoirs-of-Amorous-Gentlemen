@@ -3,7 +3,7 @@
 
   /**
    * Memoirs of Amorous Gentlemen
-   * Cast Grid + Cast Modal
+   * Cast Grid + Cast Modal + Biography Navigation
    */
 
   const MODULE = '[Memoirs Cast]';
@@ -16,6 +16,8 @@
   let castData = [];
   let modal = null;
   let lastTrigger = null;
+  let currentCastIndex = -1;
+  let modalRequestId = 0;
 
   // ------------------------------------------------------------
   // HELPERS
@@ -32,6 +34,15 @@
 
   const escapeAttribute = (value = '') => {
     return escapeHTML(value);
+  };
+
+  /**
+   * Does this cast member have a biography?
+   */
+  const hasBiography = member => {
+    return Boolean(
+      String(member?.bio || '').trim()
+    );
   };
 
   /**
@@ -98,9 +109,8 @@
       )
     );
 
-    const hasBio = Boolean(
-      String(member.bio || '').trim()
-    );
+    const hasBio =
+      hasBiography(member);
 
     const imageHTML = image
       ? `
@@ -122,6 +132,7 @@
       <div class="moag-cast__info">
 
         <h3 class="moag-cast__name">
+
           <span class="moag-cast__first-name">
             ${safeFirstName}
           </span>
@@ -135,6 +146,7 @@
               `
               : ''
           }
+
         </h3>
 
         ${
@@ -310,6 +322,60 @@
   };
 
   // ------------------------------------------------------------
+  // BIOGRAPHY NAVIGATION
+  // ------------------------------------------------------------
+
+  /**
+   * Find the next/previous cast member with a bio.
+   *
+   * direction:
+   *  1 = next
+   * -1 = previous
+   *
+   * Navigation wraps around the cast array.
+   */
+  const getAdjacentBioIndex = (
+    startIndex,
+    direction
+  ) => {
+    const total = castData.length;
+
+    if (!total) {
+      return -1;
+    }
+
+    let index = startIndex;
+
+    for (
+      let checked = 0;
+      checked < total;
+      checked++
+    ) {
+      index =
+        (index + direction + total) %
+        total;
+
+      if (
+        index !== startIndex &&
+        hasBiography(castData[index])
+      ) {
+        return index;
+      }
+    }
+
+    return -1;
+  };
+
+  /**
+   * Number of cast members that actually have bios.
+   */
+  const getBiographyCount = () => {
+    return castData.filter(
+      hasBiography
+    ).length;
+  };
+
+  // ------------------------------------------------------------
   // CREATE MODAL
   // ------------------------------------------------------------
 
@@ -331,6 +397,31 @@
         class="moag-cast-modal__backdrop"
         data-modal-close
       ></div>
+
+      <button
+        class="
+          moag-cast-modal__nav
+          moag-cast-modal__nav--prev
+        "
+        type="button"
+        aria-label="Previous cast biography"
+        data-modal-prev
+      >
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path
+            d="M15.5 4.5L8 12l7.5 7.5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
 
       <div
         class="moag-cast-modal__dialog"
@@ -355,13 +446,42 @@
         ></div>
 
       </div>
+
+      <button
+        class="
+          moag-cast-modal__nav
+          moag-cast-modal__nav--next
+        "
+        type="button"
+        aria-label="Next cast biography"
+        data-modal-next
+      >
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path
+            d="M8.5 4.5L16 12l-7.5 7.5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
     `;
 
-    document.body.appendChild(element);
+    document.body.appendChild(
+      element
+    );
 
     element.addEventListener(
       'click',
       event => {
+
+        // CLOSE
         const closeTrigger =
           event.target.closest(
             '[data-modal-close]'
@@ -369,6 +489,28 @@
 
         if (closeTrigger) {
           closeModal();
+          return;
+        }
+
+        // PREVIOUS
+        const previousTrigger =
+          event.target.closest(
+            '[data-modal-prev]'
+          );
+
+        if (previousTrigger) {
+          navigateModal(-1);
+          return;
+        }
+
+        // NEXT
+        const nextTrigger =
+          event.target.closest(
+            '[data-modal-next]'
+          );
+
+        if (nextTrigger) {
+          navigateModal(1);
         }
       }
     );
@@ -505,25 +647,64 @@
   };
 
   // ------------------------------------------------------------
-  // OPEN MODAL
+  // UPDATE NAVIGATION STATE
   // ------------------------------------------------------------
 
-  const openModal = async (
-    member,
-    trigger
-  ) => {
-    if (!member) {
+  const updateNavigationState = () => {
+    if (!modal) {
       return;
     }
 
+    const previousButton =
+      modal.querySelector(
+        '[data-modal-prev]'
+      );
+
+    const nextButton =
+      modal.querySelector(
+        '[data-modal-next]'
+      );
+
+    const biographyCount =
+      getBiographyCount();
+
     /**
-     * Safety check.
-     *
-     * Even if openModal() is called manually,
-     * members without biographies should not
-     * open a modal.
+     * With zero or one biography there is
+     * nowhere useful to navigate.
      */
-    if (!String(member.bio || '').trim()) {
+    const shouldShowNavigation =
+      biographyCount > 1;
+
+    if (previousButton) {
+      previousButton.hidden =
+        !shouldShowNavigation;
+    }
+
+    if (nextButton) {
+      nextButton.hidden =
+        !shouldShowNavigation;
+    }
+  };
+
+  // ------------------------------------------------------------
+  // LOAD MODAL MEMBER
+  // ------------------------------------------------------------
+
+  const loadModalMember = async (
+    index,
+    options = {}
+  ) => {
+    const {
+      focusClose = false,
+    } = options;
+
+    const member =
+      castData[index];
+
+    if (
+      !member ||
+      !hasBiography(member)
+    ) {
       return;
     }
 
@@ -535,30 +716,39 @@
         '.moag-cast-modal__content'
       );
 
-    lastTrigger =
-      trigger || null;
+    if (!content) {
+      return;
+    }
+
+    currentCastIndex = index;
+
+    /**
+     * Every member load gets a unique ID.
+     *
+     * If somebody quickly clicks next/previous
+     * before the previous Google Doc finishes,
+     * the old request cannot overwrite the new bio.
+     */
+    const requestId =
+      ++modalRequestId;
 
     content.innerHTML =
       renderModalContent(member);
 
-    modalElement.hidden = false;
-
-    modalElement.classList.add(
-      'is-open'
-    );
-
-    document.body.classList.add(
-      'moag-modal-open'
-    );
-
-    const closeButton =
-      modalElement.querySelector(
-        '.moag-cast-modal__close'
+    /**
+     * Reset biography scroll position when
+     * changing cast members.
+     */
+    const loadingBio =
+      content.querySelector(
+        '.moag-cast-modal__bio'
       );
 
-    if (closeButton) {
-      closeButton.focus();
+    if (loadingBio) {
+      loadingBio.scrollTop = 0;
     }
+
+    updateNavigationState();
 
     try {
       const bioHTML =
@@ -567,13 +757,31 @@
         );
 
       /**
-       * Member may have closed the modal
-       * while Google Doc was loading.
+       * Ignore stale responses.
+       */
+      if (
+        requestId !== modalRequestId
+      ) {
+        return;
+      }
+
+      /**
+       * Modal may have been closed while
+       * the Google Doc was loading.
        */
       if (
         !modalElement.classList.contains(
           'is-open'
         )
+      ) {
+        return;
+      }
+
+      /**
+       * User may have navigated elsewhere.
+       */
+      if (
+        currentCastIndex !== index
       ) {
         return;
       }
@@ -585,8 +793,31 @@
 
       if (bio) {
         bio.innerHTML = bioHTML;
+        bio.scrollTop = 0;
+      }
+
+      if (focusClose) {
+        const closeButton =
+          modalElement.querySelector(
+            '.moag-cast-modal__close'
+          );
+
+        if (closeButton) {
+          closeButton.focus();
+        }
       }
     } catch (error) {
+      /**
+       * Don't show an error from an old request
+       * after navigating to somebody else.
+       */
+      if (
+        requestId !== modalRequestId ||
+        currentCastIndex !== index
+      ) {
+        return;
+      }
+
       console.error(
         `${MODULE} Unable to load biography for ${member.name}.`,
         error
@@ -608,6 +839,97 @@
   };
 
   // ------------------------------------------------------------
+  // OPEN MODAL
+  // ------------------------------------------------------------
+
+  const openModal = async (
+    member,
+    trigger
+  ) => {
+    if (
+      !member ||
+      !hasBiography(member)
+    ) {
+      return;
+    }
+
+    const index =
+      castData.indexOf(member);
+
+    if (index < 0) {
+      return;
+    }
+
+    const modalElement =
+      createModal();
+
+    lastTrigger =
+      trigger || null;
+
+    modalElement.hidden = false;
+
+    modalElement.classList.add(
+      'is-open'
+    );
+
+    document.body.classList.add(
+      'moag-modal-open'
+    );
+
+    await loadModalMember(
+      index
+    );
+
+    /**
+     * Focus close button after opening.
+     *
+     * We intentionally do NOT do this when
+     * navigating between cast members.
+     */
+    const closeButton =
+      modalElement.querySelector(
+        '.moag-cast-modal__close'
+      );
+
+    if (
+      closeButton &&
+      modalElement.classList.contains(
+        'is-open'
+      )
+    ) {
+      closeButton.focus();
+    }
+  };
+
+  // ------------------------------------------------------------
+  // NAVIGATE MODAL
+  // ------------------------------------------------------------
+
+  const navigateModal = direction => {
+    if (
+      !modal ||
+      modal.hidden ||
+      currentCastIndex < 0
+    ) {
+      return;
+    }
+
+    const newIndex =
+      getAdjacentBioIndex(
+        currentCastIndex,
+        direction
+      );
+
+    if (newIndex < 0) {
+      return;
+    }
+
+    loadModalMember(
+      newIndex
+    );
+  };
+
+  // ------------------------------------------------------------
   // CLOSE MODAL
   // ------------------------------------------------------------
 
@@ -619,6 +941,12 @@
       return;
     }
 
+    /**
+     * Invalidate any biography request that
+     * may still be running.
+     */
+    modalRequestId++;
+
     modal.classList.remove(
       'is-open'
     );
@@ -628,6 +956,8 @@
     document.body.classList.remove(
       'moag-modal-open'
     );
+
+    currentCastIndex = -1;
 
     if (lastTrigger) {
       lastTrigger.focus();
@@ -641,6 +971,8 @@
   // ------------------------------------------------------------
 
   const bindEvents = container => {
+
+    // GRID CLICK
     container.addEventListener(
       'click',
       event => {
@@ -664,7 +996,10 @@
         const member =
           castData[index];
 
-        if (!member) {
+        if (
+          !member ||
+          !hasBiography(member)
+        ) {
           return;
         }
 
@@ -675,15 +1010,40 @@
       }
     );
 
+    // KEYBOARD
     document.addEventListener(
       'keydown',
       event => {
         if (
-          event.key === 'Escape' &&
-          modal &&
-          !modal.hidden
+          !modal ||
+          modal.hidden
         ) {
+          return;
+        }
+
+        // ESCAPE
+        if (event.key === 'Escape') {
+          event.preventDefault();
+
           closeModal();
+
+          return;
+        }
+
+        // PREVIOUS
+        if (event.key === 'ArrowLeft') {
+          event.preventDefault();
+
+          navigateModal(-1);
+
+          return;
+        }
+
+        // NEXT
+        if (event.key === 'ArrowRight') {
+          event.preventDefault();
+
+          navigateModal(1);
         }
       }
     );
@@ -732,6 +1092,10 @@
       console.log(
         `${MODULE} Rendered ${castData.length} cast member(s).`
       );
+
+      console.log(
+        `${MODULE} ${getBiographyCount()} biography member(s) available for modal navigation.`
+      );
     } catch (error) {
       console.error(
         `${MODULE} Unable to render cast.`,
@@ -749,6 +1113,7 @@
     init,
     openModal,
     closeModal,
+    navigateModal,
   };
 
   // ------------------------------------------------------------
