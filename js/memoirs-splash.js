@@ -8,7 +8,7 @@
 
   const MODULE = '[Memoirs Splash]';
   const SELECTOR = '#moag-splash';
-  const BREAKPOINT = 1024;
+  const BREAKPOINT = 768;
 
   if (window.MemoirsSplash?.initialized) {
     return;
