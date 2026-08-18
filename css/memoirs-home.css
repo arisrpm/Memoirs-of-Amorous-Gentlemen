@@ -1,0 +1,654 @@
+/* ============================================================
+   MEMOIRS OF AMOROUS GENTLEMEN — combined styles
+   Paste into: Squarespace → Design → Custom CSS
+   (no <style> tags needed there)
+   ============================================================ */
+
+/* ============================================================
+   1. EDIT EVERYTHING HERE
+   ============================================================ */
+:root {
+  /* --- FONTS --- */
+  --moag-display: "tt-ricks", serif;     /* tt-ricks — display / names */
+  --moag-serif:   "adobe-jenson-pro-caption", serif;     /* adobe-jenson-pro — venue block */
+  --moag-sans:    "canada-type-gibson", sans-serif;  /* canada-type-gibson — labels + body */
+
+  /* --- COLOR --- */
+  --moag-text: #F4EBC1;
+
+  /* --- HERO --- */
+  --moag-label: 22px;   /* STARRING */
+  --moag-star: 48px;   /* SOPHIA ANNE CARUSO */
+  --moag-previews: 58px;   /* PREVIEWS BEGIN SEPTEMBER 25 */
+  --moag-venue: 52px;   /* THE NIGHT EGG */
+  --moag-sub: 20px;   /* AT THE CULTURE CLUB */
+  --moag-address: 20px;   /* street address */
+  --moag-logo-h:   220px;  /* logo slot height */
+
+  /* --- SYNOPSIS --- */
+  --moag-headline: 52px;
+  --moag-body:     24px;
+
+  /* --- CREDITS --- */
+  --moag-role: 18px;   /* MUSIC & LYRICS */
+  --moag-name: 40px;   /* DUNCAN SHEIK */
+  --moag-name-sm:  30px;   /* names in the 4-across row */
+  --moag-row-gap:  40px;
+  --moag-col-gap:  60px;
+
+  /* --- TRACKING / LEADING --- */
+  --moag-track-label: 0.12em;
+  --moag-track-venue: 0.14em;
+  --moag-lh-body:     1.5;
+  --moag-lh-display:  1.1;
+
+  /* --- LAYOUT --- */
+  --moag-pad-y:      30px;
+  --moag-pad-x:      20px;
+  --moag-max-hero:   900px;
+  --moag-max-syn:    1600px;
+  --moag-max-cred:   1200px;
+}
+
+/* --- MOBILE OVERRIDES (all sizes in one place) --- */
+@media (max-width: 640px) {
+  :root {
+    --moag-label:    20px;
+    --moag-star:     36px;
+    --moag-previews: 36px;
+    --moag-venue:    28px;
+    --moag-sub:      18px;
+    --moag-address:  14px;
+    --moag-logo-h:   120px;
+
+    --moag-headline: 36px;
+    --moag-body:     18px;
+
+    --moag-role:     18px;
+    --moag-name:     38px;
+    --moag-name-sm:  34px;
+    --moag-row-gap:  26px;
+    --moag-col-gap:  26px;
+
+    --moag-pad-y:    44px;
+    --moag-pad-x:    18px;
+  }
+}
+
+/* ============================================================
+   6. TOPPER — ANNOUNCEMENT BAR + INLINE FORM
+   Append to moag-styles.css
+   Targets structural selectors only — Squarespace's hashed
+   class names change on rebuilds, so none are used here.
+   ============================================================ */
+
+:root {
+  /* --- TOPPER TYPE --- */
+  --moag-topper-head:  40px;   /* TICKETS ON SALE AUGUST 20 */
+  --moag-topper-label: 38px;   /* GET UPDATES: */
+  --moag-topper-input: 17px;   /* placeholder + typed text */
+  --moag-topper-btn: 18px;   /* SIGN UP */
+
+  /* --- TOPPER COLOR --- */
+  --moag-topper-bg:      #7A1512;  /* red bar */
+  --moag-input-bg:       #3A0E0C;  /* dark maroon field */
+  --moag-input-border:   #5C1512;
+  --moag-btn-bg:         #14100E;  /* near-black button */
+  --moag-btn-bg-hover:   #241A16;
+
+  /* --- TOPPER LAYOUT --- */
+  --moag-topper-pad-y:   18px;
+  --moag-topper-gap:     6px;   /* space between label / input / button */
+  --moag-input-h: 45px;
+  --moag-input-pad-x:    16px;
+  --moag-btn-pad-x: 18px;
+  --moag-topper-max:     1400px; /* max width of the bar contents */
+}
+
+@media (max-width: 640px) {
+  :root {
+    --moag-topper-head:  20px;
+    --moag-topper-input: 15px;
+    --moag-topper-btn:   15px;
+    --moag-topper-pad-y: 14px;
+    --moag-topper-gap:   8px;
+    --moag-input-h:      42px;
+  }
+}
+
+
+/* ------------------------------------------------------------
+   6a. The bar itself
+   ------------------------------------------------------------ */
+#moag-topper {
+  background: var(--moag-topper-bg);
+  color: var(--moag-text);
+  text-align: center;
+  padding-top: 0px;
+}
+
+#moag-topper .moag-topper__head {
+  font-family: var(--moag-serif);
+  font-size: var(--moag-topper-head);
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  text-transform: uppercase;
+  margin: 0 0 12px;
+}
+
+#moag-topper h3 {
+    color: #fffada !important;
+    font-family: "tt-ricks", serif;
+    font-weight: 500;
+    font-style: normal;
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+}
+
+#moag-topper h3 span:first-child {
+    font-size: 75%;
+    position: relative;
+    top: 0px;
+}
+  
+#moag-topper h3 img {
+    height: 25px;
+    margin: 0;
+    padding: 0;
+}
+
+@media (max-width: 1600px) {
+  #moag-topper .form-item.field input[type="email"] {
+      min-width: 400px !important;
+  }
+}
+
+@media (max-width: 1294px) {
+  #moag-topper h3 {
+    font-size: 2.6vw;
+  }  
+}
+
+@media (max-width: 1090px) {
+  #moag-topper h3 {font-size: 28px;}
+
+  #moag-topper .form-item.field input[type="email"] {
+      min-width: 270px !important;
+  }
+}
+
+@media (max-width: 990px) {
+    #moag-topper .form-item.field input[type="email"] {
+        min-width: 200px !important;
+        height: 40px !important;
+    }
+    .fe-6a736426cceae3526bfbb4e8 {
+        grid-template-columns: minmax(var(--grid-gutter), 1fr) repeat(21, minmax(0, var(--cell-max-width))) minmax(var(--grid-gutter), 1fr) !important;
+    }
+    #moag-topper .form-button-wrapper button.form-submit-button {
+        font-size: 16px !important;
+        padding: 10px !important;
+        height: 40px !important;
+    }   
+    #moag-topper form.react-form-contents,
+    #moag-topper .form-item.field.email {
+        gap: 0px !important;
+    }
+}
+
+@media (max-width: 845px) {
+  #moag-topper h3 {
+        font-size: 25px;
+    }
+}
+
+.footer-copyright {
+    position: relative;
+    text-align: center;
+    color: #fffada;
+    padding-top: 15px;
+}
+
+.footer-copyright a {
+    color: #fffada;
+    text-decoration: underline;
+}
+
+/* ------------------------------------------------------------
+   6b. Kill the wrappers that break the single line
+   ------------------------------------------------------------ */
+
+/* empty focus-trap div at the top of the form */
+#moag-topper form.react-form-contents > div[tabindex="-1"] { display: none !important; }
+
+/* honeypot anti-spam field — must stay in the DOM, just not laid out */
+#moag-topper .field-list > div[aria-hidden="true"] {
+  display: none !important;
+}
+
+/* password-manager injection point */
+#moag-topper [data-lastpass-icon-root] { display: none !important; }
+
+/* Squarespace's animated underline effect — we're styling the input directly */
+#moag-topper .form-input-effects { display: none !important; }
+
+/* "(required)" text next to the label */
+#moag-topper .description.required { display: none !important; }
+
+
+/* ------------------------------------------------------------
+   6c. Flatten everything into one row
+   ------------------------------------------------------------ */
+#moag-topper form.react-form-contents {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--moag-topper-gap);
+  max-width: var(--moag-topper-max);
+  margin: 6px auto 0 10px;
+}
+
+/* .field-list normally stacks fields vertically */
+#moag-topper .field-list {
+  display: flex;
+  align-items: center;
+  gap: var(--moag-topper-gap);
+  flex: 1 1 auto;
+  min-width: 0;          /* lets the input actually shrink */
+  margin: 0 !important;
+}
+
+/* the email field wrapper: label + input side by side */
+#moag-topper .form-item.field.email {
+  display: flex;
+  align-items: center;
+  gap: var(--moag-topper-gap);
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+
+/* ------------------------------------------------------------
+   6d. Label — "GET UPDATES:"
+   ------------------------------------------------------------ */
+#moag-topper .form-item.field label.title {
+  display: none;
+  font-family: var(--moag-display);
+  font-size: var(--moag-topper-label) !important;
+  color: var(--moag-text);
+  letter-spacing: 0.02em;
+  font-weight: 500;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex: 0 0 auto;        /* never shrinks */
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+#moag-topper .form-item.field label.title > div,
+#moag-topper .form-item.field label.title > div > div {
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
+/* adds the colon — DELETE this rule if you type "GET UPDATES:"
+   directly into the field label in the form editor */
+#moag-topper .form-item.field label.title span:first-of-type::after {
+  content: ":";
+}
+
+
+/* ------------------------------------------------------------
+   6e. Input
+   ------------------------------------------------------------ */
+#moag-topper .form-item.field input[type="email"] {
+  font-family: var(--moag-sans);
+  font-size: var(--moag-topper-input);
+  color: var(--moag-text);
+  background: rgb(9,21,25, 50%) !important;
+  border: 1px solid var(--moag-input-border);
+  border-radius: 0;
+  line-height: 1;
+  height: var(--moag-input-h);
+  padding: 5px 10px 10px;
+  flex: 1 1 auto;
+  min-width: 542px;
+  width: 100%;
+  margin: 0 !important;
+  box-shadow: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+#moag-topper .form-item.field input[type="email"]::placeholder {
+  color: var(--moag-text);
+  opacity: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+#moag-topper .form-item.field input[type="email"]:focus {
+  outline: none;
+  border-color: var(--moag-text);
+}
+
+/* error state — Squarespace sets aria-invalid on failed validation */
+#moag-topper .form-item.field input[aria-invalid="true"] {
+  border-color: var(--moag-text);
+}
+
+
+/* ------------------------------------------------------------
+   6f. Button — "SIGN UP"
+   ------------------------------------------------------------ */
+#moag-topper .form-button-wrapper {
+  flex: 0 0 auto;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: left;
+}
+
+#moag-topper .form-button-wrapper button.form-submit-button {
+  font-family: var(--moag-serif);
+  font-size: var(--moag-topper-btn);
+  color: var(--moag-text);
+  background: var(--moag-btn-bg);
+  border: none;
+  font-weight: 600;
+  border-radius: 0;
+  height: var(--moag-input-h);
+  padding: 0 var(--moag-btn-pad-x);
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  margin: 0 !important;
+  transition: background 0.2s ease;
+}
+
+#moag-topper .form-button-wrapper button.form-submit-button:hover {
+  background: var(--moag-btn-bg-hover);
+}
+
+
+/* ------------------------------------------------------------
+   6g. Mobile — input + button share a line, label sits above
+   ------------------------------------------------------------ */
+@media (max-width: 767px) {
+  #moag-topper {
+    min-height: 112px !important;
+  }
+  .fluid-engine.fe-6a736426cceae3526bfbb4e8 {
+    display: block;
+  }
+  #moag-topper form.react-form-contents {
+    margin: 10px auto 15px;
+  }
+
+  #moag-topper h3 {
+    font-size: 5vw;
+    font-family: 'adobe-jenson-pro-caption';
+    font-weight: 600;
+  }  
+
+  #moag-topper h3 span {
+    display: none;
+  }
+
+  #moag-topper .field-list {
+    flex: 1 1 100%;
+  }
+
+  #moag-topper .form-item.field.email {
+    gap: 10px !important;
+  }
+
+  #moag-topper .form-item.field label.title {
+    display: inline-flex;
+    font-size: 5vw !important;
+  }
+
+  #moag-topper .form-item.field input[type="email"] {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 350px !important;
+  }
+
+  #moag-topper .form-button-wrapper {
+  }
+
+  #moag-topper .form-button-wrapper button.form-submit-button {
+    width: 100%;
+  }
+}  
+
+@media (max-width: 635px) {
+    #moag-topper .form-item.field input[type="email"] {
+        min-width: 250px !important;
+    }
+}
+
+@media (max-width: 500px) {
+  #moag-topper h3 {
+    font-size: 6vw;
+  }
+
+  #moag-topper .form-item.field input[type="email"] {
+    min-width: 235px !important;
+  }  
+
+  #moag-topper h3 span:last-child {
+      display: block;
+      font-family: 'tt-ricks';
+      font-size: 6vw;
+      margin: 4px 0 0;
+      font-weight: 500;
+      letter-spacing: 1px;
+  }
+
+  #moag-topper .form-item.field label.title {
+      display: none;
+  }  
+}
+  
+
+/* ============================================================
+   2. SHARED BASE — no need to touch below this line
+   ============================================================ */
+.moag-hero,
+.moag-syn,
+.moag-cred {
+  color: var(--moag-text);
+  text-align: center;
+  margin: 0 auto;
+  padding: var(--moag-pad-y) var(--moag-pad-x);
+  box-sizing: border-box;
+}
+
+.moag-hero *,
+.moag-syn *,
+.moag-cred * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.moag-hero { 
+  max-width: var(--moag-max-hero); 
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  max-width: 100%;
+  align-items: center;
+  justify-content: space-between;  
+  padding: 0;
+}
+.moag-hero > div {
+    flex-basis: calc(33.33% - (15px));
+}
+.moag-syn  { max-width: var(--moag-max-syn);  }
+.moag-cred { max-width: var(--moag-max-cred); }
+
+/* shared type roles */
+.moag-hero__label,
+.moag-cred__role {
+  font-family: var(--moag-sans);
+  letter-spacing: var(--moag-track-label);
+  text-transform: uppercase;
+}
+
+.moag-hero__star,
+.moag-hero__previews,
+.moag-syn__headline,
+.moag-cred__name,
+.moag-hero__venue {
+  font-family: var(--moag-display);
+  letter-spacing: 0.01em;
+  line-height: var(--moag-lh-display);
+  text-transform: uppercase;
+}
+
+
+.moag-hero__address {
+  letter-spacing: var(--moag-track-venue);
+  text-transform: uppercase;
+  font-family: "adobe-jenson-pro-caption", serif;
+  font-weight: 600;
+  font-style: normal;
+}
+
+em { font-style: italic; }
+
+
+/* ============================================================
+   3. BLOCK 1 — HERO
+   ============================================================ */
+ #moag-hero {
+    background-color: #0a1519;
+}
+.moag-hero__logo { min-height: var(--moag-logo-h); margin-bottom: 0; }
+.moag-hero__logo img { width: 645px; max-width: 100%; height: auto; display: block; margin: 0 auto; }
+
+.moag-hero__label    {font-size: var(--moag-label);margin-bottom: 0;line-height: 1;letter-spacing: -1px;}
+.moag-hero__star     {font-size: var(--moag-star);font-weight: 500;}
+.moag-hero__previews {font-size: var(--moag-previews);margin-top: 0;font-weight: 500;}
+
+.moag-hero__divider {
+  font-family: var(--moag-serif);
+  font-size: 30px;
+  line-height: 1;
+  margin: 8px 0;
+}
+
+.moag-hero__divid {
+    padding: 15px 0;
+}
+
+.moag-hero__venue   {font-size: var(--moag-venue);line-height: 1;font-weight: 500;}
+.moag-hero__sub     {font-size: var(--moag-sub);margin-top: 7px;margin-bottom: 8px;font-family: "adobe-jenson-pro-caption", serif;font-weight: 600;font-style: normal;line-height: 1;}
+.moag-hero__address {font-size: var(--moag-address);margin-top: 0;line-height: 1;}
+
+@media (max-width: 1340px) {
+    .moag-hero__logo img {
+    width: 100%;
+    }
+    .fe-6a736e9d5f9a8842e4289a90 {
+        --row-height-scaling-factor: 0 !important;
+    }
+}
+
+@media (max-width: 1024px) {
+  .moag-hero {flex-direction: column;}
+
+  .moag-hero__logo {
+      order: 1;
+      margin-bottom: 25px;
+  }
+
+    .moag-hero__logo img {
+        width: 565px;
+    }  
+
+  .moag-hero > div {
+      flex-basis: calc(100% - (15px));
+  }
+
+  .moag-hero > div:nth-of-type(1) {
+      order: 2;
+      margin-bottom: 25px;
+  }
+
+  .moag-hero > div:nth-of-type(3) {
+      order: 3;
+  }  
+}
+
+@media (max-width: 767px) {
+    .moag-hero__logo img {
+      width: 445px;
+    }
+    .moag-hero__divid {
+      padding: 0;
+    }
+}
+
+@media (max-width: 640px) {
+  .moag-hero__logo     { margin-bottom: 28px; }
+  .moag-hero__previews {}
+}
+
+
+/* ============================================================
+   4. BLOCK 2 — SYNOPSIS
+   ============================================================ */
+#moag-syn {
+    position: relative;
+    border-top: 4px solid #79170f;
+}
+
+.moag-syn__headline {font-size: var(--moag-headline);margin-bottom: 42px;font-weight: 500;}
+
+.moag-syn__body {
+  font-family: var(--moag-sans);
+  font-size: var(--moag-body);
+  line-height: var(--moag-lh-body);
+}
+.moag-syn__body + .moag-syn__body { margin-top: 32px; }
+
+@media (max-width: 640px) {
+  .moag-syn__headline { margin-bottom: 28px; }
+  .moag-syn__body + .moag-syn__body { margin-top: 22px; }
+}
+
+
+/* ============================================================
+   5. BLOCK 3 — CREDITS
+   ============================================================ */
+.moag-cred__row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: var(--moag-row-gap) var(--moag-col-gap);
+  margin-bottom: var(--moag-row-gap);
+}
+.moag-cred__row:last-child { margin-bottom: 0; }
+
+.moag-cred__item { flex: 0 1 auto; }
+
+.moag-cred__role {font-size: var(--moag-role);line-height: 1;margin-bottom: 0px;letter-spacing: -1px;}
+.moag-cred__role.sm {font-size: 80%;letter-spacing: 0;}
+.moag-cred__name {font-size: var(--moag-name);line-height: 1;font-weight: 500;}
+
+.moag-cred__row--four .moag-cred__name { font-size: var(--moag-name-sm); }
+
+@media (max-width: 640px) {
+  .moag-cred__row { flex-direction: column; align-items: center; }
+}
