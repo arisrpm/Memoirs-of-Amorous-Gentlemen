@@ -152,6 +152,83 @@
     return request;
   }
 
+  /**
+   * Fetch a Google Sheet tab and convert the rows into objects.
+   *
+   * The first row of the sheet is treated as the column headers.
+   *
+   * Example sheet:
+   *
+   * NAME | ROLE | IMAGE URL
+   *
+   * becomes:
+   *
+   * {
+   *   name: 'Ari Simon',
+   *   role: 'Leader',
+   *   image_url: 'https://...'
+   * }
+   *
+   * Example:
+   * Memoirs.getObjects('Cast')
+   */
+  async function getObjects(sheetName, options = {}) {
+    const rows = await getSheet(sheetName, options);
+
+    if (!Array.isArray(rows) || rows.length < 2) {
+      return [];
+    }
+
+    /**
+     * Normalize Google Sheet column names into predictable
+     * JavaScript object keys.
+     *
+     * Examples:
+     *
+     * NAME        -> name
+     * IMAGE URL   -> image_url
+     * TWITTER (X) -> twitter
+     */
+    const headers = rows[0].map(header => {
+      return String(header || '')
+        .trim()
+        .toLowerCase()
+        .replace(/\(.*?\)/g, '')
+        .trim()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '');
+    });
+
+    const objects = rows
+      .slice(1)
+
+      // Ignore completely empty rows.
+      .filter(row => {
+        return row.some(
+          cell => String(cell || '').trim() !== ''
+        );
+      })
+
+      // Convert each row into an object.
+      .map(row => {
+        const item = {};
+
+        headers.forEach((header, index) => {
+          if (!header) return;
+
+          item[header] = String(
+            row[index] || ''
+          ).trim();
+        });
+
+        return item;
+      });
+
+    log(`Converted sheet to objects: ${sheetName}`, objects);
+
+    return objects;
+  }
+
   // ------------------------------------------------------------
   // GOOGLE DOCS
   // ------------------------------------------------------------
@@ -409,6 +486,8 @@
     ready,
 
     getSheet,
+    getObjects,
+
     getGoogleDoc,
     getGoogleDocId,
 
