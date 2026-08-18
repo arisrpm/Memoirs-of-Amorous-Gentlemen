@@ -335,7 +335,7 @@
   height: var(--moag-input-h);
   padding: 5px 10px 10px;
   flex: 1 1 auto;
-  min-width: 542px;
+  min-width: 440px;
   width: 100%;
   margin: 0 !important;
   box-shadow: none;
