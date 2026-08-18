@@ -9,7 +9,6 @@
   const MODULE = '[Memoirs Cast]';
   const SELECTOR = '#moag-cast';
 
-  // Prevent duplicate initialization.
   if (window.MemoirsCast?.initialized) {
     return;
   }
@@ -36,14 +35,17 @@
   };
 
   /**
-   * Split a full name so the first/middle names appear on
-   * the first line and the final name appears on the second.
+   * Split the final word into the last-name line.
    *
-   * Example:
-   * "Sophia Anne Caruso"
+   * Ari Simon
+   * ->
+   * Ari
+   * Simon
    *
-   * firstName: "Sophia Anne"
-   * lastName:  "Caruso"
+   * Sophia Anne Caruso
+   * ->
+   * Sophia Anne
+   * Caruso
    */
   const splitName = (fullName = '') => {
     const parts = String(fullName)
@@ -59,24 +61,12 @@
     }
 
     return {
-      firstName: parts.slice(0, -1).join(' '),
-      lastName: parts[parts.length - 1],
-    };
-  };
+      firstName: parts
+        .slice(0, -1)
+        .join(' '),
 
-  /**
-   * Return escaped split-name values for output.
-   */
-  const getDisplayName = member => {
-    const {
-      firstName,
-      lastName,
-    } = splitName(member.name || '');
-
-    return {
-      firstName: escapeHTML(firstName),
-      lastName: escapeHTML(lastName),
-      fullName: escapeHTML(member.name || ''),
+      lastName:
+        parts[parts.length - 1],
     };
   };
 
@@ -85,78 +75,128 @@
   // ------------------------------------------------------------
 
   const renderCastCard = (member, index) => {
+    const name =
+      escapeHTML(member.name || '');
+
+    const role =
+      escapeHTML(member.role || '');
+
     const {
       firstName,
       lastName,
-      fullName,
-    } = getDisplayName(member);
+    } = splitName(member.name);
 
-    const role = escapeHTML(member.role || '');
+    const safeFirstName =
+      escapeHTML(firstName);
+
+    const safeLastName =
+      escapeHTML(lastName);
 
     const image = escapeAttribute(
-      Memoirs.normalizeImageUrl(member.image_url || '')
+      Memoirs.normalizeImageUrl(
+        member.image_url || ''
+      )
     );
 
-    return `
-      <article
-        class="moag-cast__member"
-        data-cast-index="${index}"
-      >
-        <button
-          class="moag-cast__trigger"
-          type="button"
+    const hasBio = Boolean(
+      String(member.bio || '').trim()
+    );
+
+    const imageHTML = image
+      ? `
+        <div class="moag-cast__image">
+          <img
+            src="${image}"
+            alt="${name}"
+            loading="lazy"
+          >
+        </div>
+      `
+      : `
+        <div class="moag-cast__image">
+          <div class="moag-cast__image-placeholder"></div>
+        </div>
+      `;
+
+    const infoHTML = `
+      <div class="moag-cast__info">
+
+        <h3 class="moag-cast__name">
+          <span class="moag-cast__first-name">
+            ${safeFirstName}
+          </span>
+
+          ${
+            safeLastName
+              ? `
+                <span class="moag-cast__last-name">
+                  ${safeLastName}
+                </span>
+              `
+              : ''
+          }
+        </h3>
+
+        ${
+          role
+            ? `
+              <div class="moag-cast__role">
+                ${role}
+              </div>
+            `
+            : ''
+        }
+
+      </div>
+    `;
+
+    /**
+     * BIO EXISTS:
+     * Render as interactive button.
+     */
+    if (hasBio) {
+      return `
+        <article
+          class="moag-cast__member has-bio"
           data-cast-index="${index}"
-          aria-label="View ${fullName}"
-          aria-haspopup="dialog"
         >
 
-          <div class="moag-cast__image">
-            ${
-              image
-                ? `
-                  <img
-                    src="${image}"
-                    alt="${fullName}"
-                    loading="lazy"
-                  >
-                `
-                : `
-                  <div class="moag-cast__image-placeholder"></div>
-                `
-            }
-          </div>
+          <button
+            class="moag-cast__trigger"
+            type="button"
+            data-cast-index="${index}"
+            aria-label="View ${name}"
+            aria-haspopup="dialog"
+          >
 
-          <div class="moag-cast__info">
+            ${imageHTML}
 
-            <h3 class="moag-cast__name">
-              <span class="moag-cast__first-name">
-                ${firstName}
-              </span>
+            ${infoHTML}
 
-              ${
-                lastName
-                  ? `
-                    <span class="moag-cast__last-name">
-                      ${lastName}
-                    </span>
-                  `
-                  : ''
-              }
-            </h3>
+          </button>
 
-            ${
-              role
-                ? `
-                  <div class="moag-cast__role">
-                    ${role}
-                  </div>
-                `
-                : ''
-            }
+        </article>
+      `;
+    }
 
-          </div>
+    /**
+     * NO BIO:
+     * Render normal non-interactive content.
+     */
+    return `
+      <article
+        class="moag-cast__member no-bio"
+        data-cast-index="${index}"
+      >
 
-        </button>
+        <div class="moag-cast__static">
+
+          ${imageHTML}
+
+          ${infoHTML}
+
+        </div>
+
       </article>
     `;
   };
@@ -167,15 +207,22 @@
 
   const renderCast = (container, cast) => {
     if (!cast.length) {
-      console.warn(`${MODULE} No cast members found.`);
+      console.warn(
+        `${MODULE} No cast members found.`
+      );
+
       return;
     }
 
     container.innerHTML = `
       <div class="moag-cast">
+
         <div class="moag-cast__grid">
-          ${cast.map(renderCastCard).join('')}
+          ${cast
+            .map(renderCastCard)
+            .join('')}
         </div>
+
       </div>
     `;
   };
@@ -195,24 +242,30 @@
       ['youtube', 'YouTube'],
     ];
 
-    platforms.forEach(([key, label]) => {
-      const value = member[key];
+    platforms.forEach(
+      ([key, label]) => {
+        const value = member[key];
 
-      if (!value) {
-        return;
+        if (!value) {
+          return;
+        }
+
+        const url =
+          Memoirs.buildSocialUrl(
+            key,
+            value
+          );
+
+        if (!url) {
+          return;
+        }
+
+        links.push({
+          label,
+          url,
+        });
       }
-
-      const url = Memoirs.buildSocialUrl(key, value);
-
-      if (!url) {
-        return;
-      }
-
-      links.push({
-        label,
-        url,
-      });
-    });
+    );
 
     if (
       member.website &&
@@ -228,7 +281,8 @@
   };
 
   const renderSocialLinks = member => {
-    const links = getSocialLinks(member);
+    const links =
+      getSocialLinks(member);
 
     if (!links.length) {
       return '';
@@ -236,6 +290,7 @@
 
     return `
       <div class="moag-cast-modal__links">
+
         ${links
           .map(link => {
             return `
@@ -249,12 +304,13 @@
             `;
           })
           .join('')}
+
       </div>
     `;
   };
 
   // ------------------------------------------------------------
-  // MODAL
+  // CREATE MODAL
   // ------------------------------------------------------------
 
   const createModal = () => {
@@ -262,9 +318,12 @@
       return modal;
     }
 
-    const element = document.createElement('div');
+    const element =
+      document.createElement('div');
 
-    element.className = 'moag-cast-modal';
+    element.className =
+      'moag-cast-modal';
+
     element.hidden = true;
 
     element.innerHTML = `
@@ -286,25 +345,33 @@
           aria-label="Close cast biography"
           data-modal-close
         >
-          <span aria-hidden="true">&times;</span>
+          <span aria-hidden="true">
+            &times;
+          </span>
         </button>
 
-        <div class="moag-cast-modal__content"></div>
+        <div
+          class="moag-cast-modal__content"
+        ></div>
 
       </div>
     `;
 
     document.body.appendChild(element);
 
-    element.addEventListener('click', event => {
-      const closeTrigger = event.target.closest(
-        '[data-modal-close]'
-      );
+    element.addEventListener(
+      'click',
+      event => {
+        const closeTrigger =
+          event.target.closest(
+            '[data-modal-close]'
+          );
 
-      if (closeTrigger) {
-        closeModal();
+        if (closeTrigger) {
+          closeModal();
+        }
       }
-    });
+    );
 
     modal = element;
 
@@ -315,20 +382,35 @@
   // MODAL CONTENT
   // ------------------------------------------------------------
 
-  const renderModalContent = (member, bioHTML = '') => {
+  const renderModalContent = (
+    member,
+    bioHTML = ''
+  ) => {
+    const name =
+      escapeHTML(member.name || '');
+
+    const role =
+      escapeHTML(member.role || '');
+
     const {
       firstName,
       lastName,
-      fullName,
-    } = getDisplayName(member);
+    } = splitName(member.name);
 
-    const role = escapeHTML(member.role || '');
+    const safeFirstName =
+      escapeHTML(firstName);
+
+    const safeLastName =
+      escapeHTML(lastName);
 
     const image = escapeAttribute(
-      Memoirs.normalizeImageUrl(member.image_url || '')
+      Memoirs.normalizeImageUrl(
+        member.image_url || ''
+      )
     );
 
-    const socialLinks = renderSocialLinks(member);
+    const socialLinks =
+      renderSocialLinks(member);
 
     return `
       <div class="moag-cast-modal__layout">
@@ -336,18 +418,22 @@
         <div class="moag-cast-modal__media">
 
           <div class="moag-cast-modal__image">
+
             ${
               image
                 ? `
                   <img
                     src="${image}"
-                    alt="${fullName}"
+                    alt="${name}"
                   >
                 `
                 : `
-                  <div class="moag-cast-modal__image-placeholder"></div>
+                  <div
+                    class="moag-cast-modal__image-placeholder"
+                  ></div>
                 `
             }
+
           </div>
 
         </div>
@@ -360,25 +446,33 @@
               class="moag-cast-modal__name"
               id="moag-cast-modal-title"
             >
-              <span class="moag-cast-modal__first-name">
-                ${firstName}
+
+              <span
+                class="moag-cast-modal__first-name"
+              >
+                ${safeFirstName}
               </span>
 
               ${
-                lastName
+                safeLastName
                   ? `
-                    <span class="moag-cast-modal__last-name">
-                      ${lastName}
+                    <span
+                      class="moag-cast-modal__last-name"
+                    >
+                      ${safeLastName}
                     </span>
                   `
                   : ''
               }
+
             </h2>
 
             ${
               role
                 ? `
-                  <div class="moag-cast-modal__role">
+                  <div
+                    class="moag-cast-modal__role"
+                  >
                     ${role}
                   </div>
                 `
@@ -388,14 +482,18 @@
           </header>
 
           <div class="moag-cast-modal__bio">
+
             ${
               bioHTML ||
               `
-                <p class="moag-cast-modal__loading">
+                <p
+                  class="moag-cast-modal__loading"
+                >
                   Loading biography...
                 </p>
               `
             }
+
           </div>
 
           ${socialLinks}
@@ -410,85 +508,80 @@
   // OPEN MODAL
   // ------------------------------------------------------------
 
-  const openModal = async (member, trigger) => {
+  const openModal = async (
+    member,
+    trigger
+  ) => {
     if (!member) {
       return;
     }
 
-    const modalElement = createModal();
-
-    const content = modalElement.querySelector(
-      '.moag-cast-modal__content'
-    );
-
-    lastTrigger = trigger || null;
-
     /**
-     * Render immediately so the modal opens without waiting
-     * for the Google Doc request.
+     * Safety check.
+     *
+     * Even if openModal() is called manually,
+     * members without biographies should not
+     * open a modal.
      */
-    content.innerHTML = renderModalContent(member);
+    if (!String(member.bio || '').trim()) {
+      return;
+    }
+
+    const modalElement =
+      createModal();
+
+    const content =
+      modalElement.querySelector(
+        '.moag-cast-modal__content'
+      );
+
+    lastTrigger =
+      trigger || null;
+
+    content.innerHTML =
+      renderModalContent(member);
 
     modalElement.hidden = false;
-    modalElement.classList.add('is-open');
 
-    document.body.classList.add('moag-modal-open');
-
-    const closeButton = modalElement.querySelector(
-      '.moag-cast-modal__close'
+    modalElement.classList.add(
+      'is-open'
     );
+
+    document.body.classList.add(
+      'moag-modal-open'
+    );
+
+    const closeButton =
+      modalElement.querySelector(
+        '.moag-cast-modal__close'
+      );
 
     if (closeButton) {
       closeButton.focus();
     }
 
-    // No biography URL supplied.
-    if (!member.bio) {
-      const bio = modalElement.querySelector(
-        '.moag-cast-modal__bio'
-      );
-
-      if (bio) {
-        bio.innerHTML = '';
-      }
-
-      return;
-    }
-
     try {
-      /**
-       * Memoirs.getGoogleDoc() returns cleaned HTML.
-       *
-       * IMPORTANT:
-       * Do NOT escape this HTML. The core has already removed
-       * Google Docs presentation markup while preserving useful
-       * semantic markup such as:
-       *
-       * <p>
-       * <em>
-       * <strong>
-       * <a>
-       * <ul>
-       * <ol>
-       * <li>
-       */
-      const bioHTML = await Memoirs.getGoogleDoc(
-        member.bio
-      );
+      const bioHTML =
+        await Memoirs.getGoogleDoc(
+          member.bio
+        );
 
       /**
-       * The user may have closed the modal while the Google
-       * Doc was loading.
+       * Member may have closed the modal
+       * while Google Doc was loading.
        */
       if (
-        !modalElement.classList.contains('is-open')
+        !modalElement.classList.contains(
+          'is-open'
+        )
       ) {
         return;
       }
 
-      const bio = modalElement.querySelector(
-        '.moag-cast-modal__bio'
-      );
+      const bio =
+        modalElement.querySelector(
+          '.moag-cast-modal__bio'
+        );
 
       if (bio) {
         bio.innerHTML = bioHTML;
@@ -499,9 +592,10 @@
         error
       );
 
-      const bio = modalElement.querySelector(
-        '.moag-cast-modal__bio'
-      );
+      const bio =
+        modalElement.querySelector(
+          '.moag-cast-modal__bio'
+        );
 
       if (bio) {
         bio.innerHTML = `
@@ -518,11 +612,17 @@
   // ------------------------------------------------------------
 
   const closeModal = () => {
-    if (!modal || modal.hidden) {
+    if (
+      !modal ||
+      modal.hidden
+    ) {
       return;
     }
 
-    modal.classList.remove('is-open');
+    modal.classList.remove(
+      'is-open'
+    );
+
     modal.hidden = true;
 
     document.body.classList.remove(
@@ -541,41 +641,52 @@
   // ------------------------------------------------------------
 
   const bindEvents = container => {
-    container.addEventListener('click', event => {
-      const trigger = event.target.closest(
-        '.moag-cast__trigger'
-      );
+    container.addEventListener(
+      'click',
+      event => {
+        const trigger =
+          event.target.closest(
+            '.moag-cast__trigger'
+          );
 
-      if (!trigger) {
-        return;
+        if (!trigger) {
+          return;
+        }
+
+        const index = Number(
+          trigger.dataset.castIndex
+        );
+
+        if (!Number.isInteger(index)) {
+          return;
+        }
+
+        const member =
+          castData[index];
+
+        if (!member) {
+          return;
+        }
+
+        openModal(
+          member,
+          trigger
+        );
       }
+    );
 
-      const index = Number(
-        trigger.dataset.castIndex
-      );
-
-      if (!Number.isInteger(index)) {
-        return;
+    document.addEventListener(
+      'keydown',
+      event => {
+        if (
+          event.key === 'Escape' &&
+          modal &&
+          !modal.hidden
+        ) {
+          closeModal();
+        }
       }
-
-      const member = castData[index];
-
-      if (!member) {
-        return;
-      }
-
-      openModal(member, trigger);
-    });
-
-    document.addEventListener('keydown', event => {
-      if (
-        event.key === 'Escape' &&
-        modal &&
-        !modal.hidden
-      ) {
-        closeModal();
-      }
-    });
+    );
   };
 
   // ------------------------------------------------------------
@@ -583,14 +694,11 @@
   // ------------------------------------------------------------
 
   const init = async () => {
-    const container = document.querySelector(
-      SELECTOR
-    );
+    const container =
+      document.querySelector(
+        SELECTOR
+      );
 
-    /**
-     * Script can be loaded globally.
-     * If #moag-cast isn't on this page, simply do nothing.
-     */
     if (!container) {
       return;
     }
@@ -604,7 +712,10 @@
     }
 
     try {
-      castData = await Memoirs.getObjects('Cast');
+      castData =
+        await Memoirs.getObjects(
+          'Cast'
+        );
 
       console.log(
         `${MODULE} Cast data:`,
@@ -644,11 +755,15 @@
   // START
   // ------------------------------------------------------------
 
-  if (document.readyState === 'loading') {
+  if (
+    document.readyState === 'loading'
+  ) {
     document.addEventListener(
       'DOMContentLoaded',
       init,
-      { once: true }
+      {
+        once: true,
+      }
     );
   } else {
     init();

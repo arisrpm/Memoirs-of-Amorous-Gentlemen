@@ -52,12 +52,6 @@
   // READY
   // ------------------------------------------------------------
 
-  /**
-   * Run a callback once the DOM is ready.
-   *
-   * This allows individual modules to work whether they are loaded
-   * through Squarespace Code Injection or directly on a page.
-   */
   function ready(callback) {
     if (typeof callback !== 'function') return;
 
@@ -74,12 +68,6 @@
   // GOOGLE SHEETS
   // ------------------------------------------------------------
 
-  /**
-   * Fetch a tab from the project's Google Sheet.
-   *
-   * Example:
-   * Memoirs.getSheet('Cast')
-   */
   async function getSheet(sheetName, options = {}) {
     if (!sheetName) {
       throw new Error('A Google Sheet tab name is required.');
@@ -114,7 +102,8 @@
     const request = fetch(url)
       .then(async response => {
         if (!response.ok) {
-          let message = `Google Sheets request failed: ${response.status}`;
+          let message =
+            `Google Sheets request failed: ${response.status}`;
 
           try {
             const responseData = await response.json();
@@ -123,7 +112,7 @@
               message += ` - ${responseData.error.message}`;
             }
           } catch (_) {
-            // Use the original HTTP error.
+            // Keep original HTTP error.
           }
 
           throw new Error(message);
@@ -139,10 +128,12 @@
         return values;
       })
       .catch(err => {
-        // Remove failed requests so a later attempt can retry.
         cache.sheets.delete(cacheKey);
 
-        error(`Unable to load sheet "${sheetName}".`, err);
+        error(
+          `Unable to load sheet "${sheetName}".`,
+          err
+        );
 
         throw err;
       });
@@ -152,90 +143,79 @@
     return request;
   }
 
+  // ------------------------------------------------------------
+  // SHEET OBJECTS
+  // ------------------------------------------------------------
+
   /**
-   * Fetch a Google Sheet tab and convert the rows into objects.
+   * Convert a Google Sheet tab into an array of objects.
    *
-   * The first row of the sheet is treated as the column headers.
-   *
-   * Example sheet:
+   * Example:
    *
    * NAME | ROLE | IMAGE URL
    *
    * becomes:
    *
    * {
-   *   name: 'Ari Simon',
-   *   role: 'Leader',
-   *   image_url: 'https://...'
+   *   name: '',
+   *   role: '',
+   *   image_url: ''
    * }
-   *
-   * Example:
-   * Memoirs.getObjects('Cast')
    */
   async function getObjects(sheetName, options = {}) {
     const rows = await getSheet(sheetName, options);
 
-    if (!Array.isArray(rows) || rows.length < 2) {
+    if (!rows.length) {
       return [];
     }
 
-    /**
-     * Normalize Google Sheet column names into predictable
-     * JavaScript object keys.
-     *
-     * Examples:
-     *
-     * NAME        -> name
-     * IMAGE URL   -> image_url
-     * TWITTER (X) -> twitter
-     */
-    const headers = rows[0].map(header => {
-      return String(header || '')
+    const normalizeHeader = value => {
+      return String(value || '')
         .trim()
         .toLowerCase()
-        .replace(/\(.*?\)/g, '')
-        .trim()
+        .replace(/\(x\)/g, 'x')
         .replace(/[^a-z0-9]+/g, '_')
         .replace(/^_+|_+$/g, '');
-    });
+    };
 
-    const objects = rows
+    const headers = rows[0].map(normalizeHeader);
+
+    return rows
       .slice(1)
-
-      // Ignore completely empty rows.
       .filter(row => {
-        return row.some(
-          cell => String(cell || '').trim() !== ''
+        return row.some(cell =>
+          String(cell || '').trim()
         );
       })
-
-      // Convert each row into an object.
       .map(row => {
-        const item = {};
+        const object = {};
 
         headers.forEach((header, index) => {
           if (!header) return;
 
-          item[header] = String(
-            row[index] || ''
-          ).trim();
+          object[header] =
+            String(row[index] || '').trim();
         });
 
-        return item;
+        /**
+         * Normalize Twitter/X column.
+         *
+         * "TWITTER (X)" becomes twitter_x through the
+         * header normalization above. The Cast module
+         * expects member.twitter.
+         */
+        if (object.twitter_x && !object.twitter) {
+          object.twitter = object.twitter_x;
+        }
+
+        return object;
       });
-
-    log(`Converted sheet to objects: ${sheetName}`, objects);
-
-    return objects;
   }
 
   // ------------------------------------------------------------
   // GOOGLE DOCS
   // ------------------------------------------------------------
 
-  /**
-   * Extract a Google Doc ID from a standard Google Docs URL.
-   */
   function getGoogleDocId(value) {
     if (!value || typeof value !== 'string') {
       return '';
@@ -248,16 +228,12 @@
     return match ? match[1] : '';
   }
 
-  /**
-   * Fetch a Google Doc as HTML.
-   *
-   * The document must be accessible publicly / to anyone with the link.
-   */
   async function getGoogleDoc(docUrl, options = {}) {
     const docId = getGoogleDocId(docUrl);
 
     if (!docId) {
       warn('Invalid Google Doc URL:', docUrl);
+
       return '';
     }
 
@@ -293,7 +269,10 @@
       .catch(err => {
         cache.docs.delete(docId);
 
-        error(`Unable to load Google Doc "${docId}".`, err);
+        error(
+          `Unable to load Google Doc "${docId}".`,
+          err
+        );
 
         throw err;
       });
@@ -303,46 +282,211 @@
     return request;
   }
 
+  // ------------------------------------------------------------
+  // GOOGLE DOC HTML CLEANUP
+  // ------------------------------------------------------------
+
   /**
-   * Strip Google Docs document-level markup while preserving
-   * useful content formatting.
+   * Convert Google Docs presentation formatting into
+   * semantic HTML before stripping Google's CSS/classes.
+   *
+   * This allows:
+   *
+   * font-style: italic
+   *      ->
+   * <em>
+   *
+   * font-weight: bold
+   *      ->
+   * <strong>
+   *
+   * The site's CSS can then completely control presentation.
    */
   function cleanGoogleDocHTML(html) {
-    if (!html) return '';
+    if (!html) {
+      return '';
+    }
 
     const parser = new DOMParser();
 
-    const doc = parser.parseFromString(html, 'text/html');
+    const doc = parser.parseFromString(
+      html,
+      'text/html'
+    );
 
-    // We want the document's content, not Google's full HTML document.
     const body = doc.body;
 
     if (!body) {
       return '';
     }
 
-    // Remove content we definitely don't want injected into Squarespace.
+    // ----------------------------------------------------------
+    // REMOVE DOCUMENT-LEVEL JUNK
+    // ----------------------------------------------------------
+
     body.querySelectorAll(
       'script, style, meta, link, title'
     ).forEach(element => {
       element.remove();
     });
 
-    // Remove Google-generated classes and IDs.
+    // ----------------------------------------------------------
+    // DETECT GOOGLE DOC FORMATTING
+    // BEFORE REMOVING CLASSES / STYLES
+    // ----------------------------------------------------------
+
+    body.querySelectorAll('span').forEach(span => {
+      let isItalic = false;
+      let isBold = false;
+
+      /**
+       * First inspect inline styles.
+       */
+      const inlineStyle =
+        span.getAttribute('style') || '';
+
+      if (
+        /font-style\s*:\s*italic/i.test(
+          inlineStyle
+        )
+      ) {
+        isItalic = true;
+      }
+
+      const inlineWeight = inlineStyle.match(
+        /font-weight\s*:\s*([^;]+)/i
+      );
+
+      if (inlineWeight) {
+        const weight =
+          inlineWeight[1].trim().toLowerCase();
+
+        if (
+          weight === 'bold' ||
+          weight === 'bolder' ||
+          parseInt(weight, 10) >= 600
+        ) {
+          isBold = true;
+        }
+      }
+
+      /**
+       * Google Docs frequently puts formatting inside
+       * generated CSS classes rather than inline styles.
+       *
+       * getComputedStyle() lets us inspect the resolved
+       * formatting while Google's <style> block still exists.
+       */
+      try {
+        const computed =
+          doc.defaultView?.getComputedStyle(span);
+
+        if (computed) {
+          if (
+            computed.fontStyle === 'italic' ||
+            computed.fontStyle === 'oblique'
+          ) {
+            isItalic = true;
+          }
+
+          const computedWeight =
+            computed.fontWeight;
+
+          if (
+            computedWeight === 'bold' ||
+            computedWeight === 'bolder' ||
+            parseInt(computedWeight, 10) >= 600
+          ) {
+            isBold = true;
+          }
+        }
+      } catch (_) {
+        // Computed styles are supplemental only.
+      }
+
+      if (!isItalic && !isBold) {
+        return;
+      }
+
+      /**
+       * Preserve the span's contents rather than using
+       * textContent so nested links/etc. survive.
+       */
+      let replacement;
+
+      if (isItalic && isBold) {
+        replacement =
+          doc.createElement('strong');
+
+        const em = doc.createElement('em');
+
+        while (span.firstChild) {
+          em.appendChild(span.firstChild);
+        }
+
+        replacement.appendChild(em);
+      } else if (isItalic) {
+        replacement =
+          doc.createElement('em');
+
+        while (span.firstChild) {
+          replacement.appendChild(
+            span.firstChild
+          );
+        }
+      } else {
+        replacement =
+          doc.createElement('strong');
+
+        while (span.firstChild) {
+          replacement.appendChild(
+            span.firstChild
+          );
+        }
+      }
+
+      span.replaceWith(replacement);
+    });
+
+    // ----------------------------------------------------------
+    // CLEAN GOOGLE PRESENTATION ATTRIBUTES
+    // ----------------------------------------------------------
+
     body.querySelectorAll('*').forEach(element => {
       element.removeAttribute('class');
       element.removeAttribute('id');
+      element.removeAttribute('style');
 
       /**
-       * Google Docs frequently exports presentation styles inline.
-       *
-       * We don't want its fonts, sizes, colors, margins, etc. overriding
-       * the Memoirs website design.
-       *
-       * Semantic elements such as <strong>, <em>, <a>, <ul>, <ol>, etc.
-       * remain intact.
+       * Strip Google's extra presentation attributes while
+       * preserving useful link attributes.
        */
-      element.removeAttribute('style');
+      element.removeAttribute('dir');
+    });
+
+    // ----------------------------------------------------------
+    // CLEAN LINKS
+    // ----------------------------------------------------------
+
+    body.querySelectorAll('a').forEach(link => {
+      const href = link.getAttribute('href');
+
+      if (!href) {
+        return;
+      }
+
+      /**
+       * Open external biography links in a new tab.
+       */
+      link.setAttribute(
+        'target',
+        '_blank'
+      );
+
+      link.setAttribute(
+        'rel',
+        'noopener noreferrer'
+      );
     });
 
     return body.innerHTML.trim();
@@ -352,9 +496,6 @@
   // GOOGLE DRIVE IMAGES
   // ------------------------------------------------------------
 
-  /**
-   * Extract a Google Drive file ID from common shared URLs.
-   */
   function getGoogleDriveFileId(value) {
     if (!value || typeof value !== 'string') {
       return '';
@@ -377,11 +518,6 @@
     return '';
   }
 
-  /**
-   * Convert a Google Drive share URL into an image-friendly URL.
-   *
-   * Normal Squarespace/CDN image URLs are returned untouched.
-   */
   function normalizeImageUrl(value) {
     if (!value || typeof value !== 'string') {
       return '';
@@ -389,13 +525,17 @@
 
     const url = value.trim();
 
-    const fileId = getGoogleDriveFileId(url);
+    const fileId =
+      getGoogleDriveFileId(url);
 
     if (!fileId) {
       return url;
     }
 
-    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1600`;
+    return (
+      `https://drive.google.com/thumbnail` +
+      `?id=${fileId}&sz=w1600`
+    );
   }
 
   // ------------------------------------------------------------
@@ -410,33 +550,33 @@
     youtube: 'https://www.youtube.com/@',
   };
 
-  /**
-   * Build a complete social URL from a username/handle.
-   *
-   * Full URLs are also accepted and returned untouched.
-   */
   function buildSocialUrl(platform, value) {
     if (!platform || !value) {
       return '';
     }
 
-    let username = String(value).trim();
+    let username =
+      String(value).trim();
 
     if (!username) {
       return '';
     }
 
-    // Allow advanced users to provide a complete URL.
     if (/^https?:\/\//i.test(username)) {
       return username;
     }
 
-    const key = platform.toLowerCase();
+    const key =
+      platform.toLowerCase();
 
-    const baseUrl = socialPlatforms[key];
+    const baseUrl =
+      socialPlatforms[key];
 
     if (!baseUrl) {
-      warn(`Unknown social platform: ${platform}`);
+      warn(
+        `Unknown social platform: ${platform}`
+      );
+
       return '';
     }
 
@@ -452,10 +592,13 @@
   // ------------------------------------------------------------
 
   function isValidUrl(value) {
-    if (!value) return false;
+    if (!value) {
+      return false;
+    }
 
     try {
       new URL(value);
+
       return true;
     } catch (_) {
       return false;
@@ -463,11 +606,17 @@
   }
 
   function clearCache(type = 'all') {
-    if (type === 'all' || type === 'sheets') {
+    if (
+      type === 'all' ||
+      type === 'sheets'
+    ) {
       cache.sheets.clear();
     }
 
-    if (type === 'all' || type === 'docs') {
+    if (
+      type === 'all' ||
+      type === 'docs'
+    ) {
       cache.docs.clear();
     }
 
