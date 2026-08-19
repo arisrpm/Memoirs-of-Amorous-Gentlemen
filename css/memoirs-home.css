@@ -656,7 +656,7 @@ em { font-style: italic; }
    ============================================================ */
 #moag-syn {
     position: relative;
-    border-top: 4px solid #79170f;
+    /* border-top: 4px solid #79170f; */
 }
 
 .moag-syn__headline {font-size: var(--moag-headline);margin-bottom: 42px;font-weight: 500;}
