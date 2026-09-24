@@ -125,6 +125,7 @@
   color: var(--moag-text);
   text-align: center;
   padding-top: 0px;
+  min-height: 80px !important;
 }
 
 #moag-topper .moag-topper__head {
@@ -156,6 +157,7 @@
     margin: 0;
     padding: 0;
     line-height: 1;
+    width: 100%;
 }
 
 #moag-topper .topper-center a {
@@ -213,6 +215,15 @@
 }
 
 @media (max-width: 990px) {
+  #moag-topper h3 {
+      font-size: 5vw;
+      text-align: right !important;
+      position: relative;
+      top: -4px;
+  }
+  #moag-topper .topper-center {
+      gap: 3vw;
+  }  
     #moag-topper .form-item.field input[type="email"] {
         min-width: 200px !important;
         height: 40px !important;
@@ -426,11 +437,19 @@
     margin: 10px auto 15px;
   }
 
+  #moag-topper .topper-center {
+      flex-direction: column;gap: 0;
+  }
+
   #moag-topper h3 {
-
-  }  
-
+      text-align: center !important;
+      margin-bottom: 9px;
+      font-size: 5vw;
+  }
   #moag-topper .topper-center a {
+      margin: 0 auto !important;
+      font-size: 20px;
+      padding: 8px 20px;
     display: block;
     top: 0;
     margin-top: 5px;
@@ -475,7 +494,10 @@
 
 @media (max-width: 500px) {
   #moag-topper h3 {
-    font-size: 8.5vw;
+   
+  }
+  #moag-topper .topper-center a {
+    font-size: 17px;
   }
 
   #moag-topper .form-item.field input[type="email"] {
