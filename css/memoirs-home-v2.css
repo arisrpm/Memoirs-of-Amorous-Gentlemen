@@ -30,8 +30,8 @@
   --moag-body:     24px;
 
   /* --- CREDITS --- */
-  --moag-role: 18px;   /* MUSIC & LYRICS */
-  --moag-name: 40px;   /* DUNCAN SHEIK */
+  --moag-role: 22px;   /* MUSIC & LYRICS */
+  --moag-name: 60px;   /* DUNCAN SHEIK */
   --moag-name-sm:  30px;   /* names in the 4-across row */
   --moag-row-gap:  40px;
   --moag-col-gap:  60px;
