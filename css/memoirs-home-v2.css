@@ -14,7 +14,7 @@
   --moag-sans:    "canada-type-gibson", sans-serif;  /* canada-type-gibson — labels + body */
 
   /* --- COLOR --- */
-  --moag-text: #F4EBC1;
+  --moag-text: #ffffff;
 
   /* --- HERO --- */
   --moag-label: 22px;   /* STARRING */
@@ -93,7 +93,7 @@
   --moag-topper-bg:      #7A1512;  /* red bar */
   --moag-input-bg:       #3A0E0C;  /* dark maroon field */
   --moag-input-border:   #5C1512;
-  --moag-btn-bg:         #14100E;  /* near-black button */
+  --moag-btn-bg:         #000000;  /* near-black button */
   --moag-btn-bg-hover:   #241A16;
 
   /* --- TOPPER LAYOUT --- */
@@ -164,14 +164,14 @@
     color: var(--moag-text);
     background: var(--moag-btn-bg);
     border: none;
-    padding: 10px;
+    padding: 5px 15px;
     font-weight: 600;
     border-radius: 0;
     letter-spacing: .06em;
     text-transform: uppercase;
     white-space: nowrap;
     cursor: pointer;
-    margin: 0 !important;
+    margin: 0 15px 0 0 !important;
     transition: background .2s ease;
     vertical-align: middle;
     position: relative;
@@ -640,6 +640,21 @@ em { font-style: italic; }
 @media (max-width: 640px) {
   .moag-hero__logo     { margin-bottom: 28px; }
   .moag-hero__previews {}
+}
+
+
+.moag-splash {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
+.moag-splash__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
 }
 
 
