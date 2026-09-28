@@ -1,0 +1,417 @@
+/* ============================================================
+   CALENDAR
+   ============================================================ */
+
+#moag-calendar {
+	width: 100%;
+	color: var(--moag-text, #e72424);
+    
+}
+
+#moag-calendar .moag-calendar__inner {
+	width: 100%;
+}
+
+/* ------------------------------------------------------------
+   MONTH HEADER
+   ------------------------------------------------------------ */
+
+#moag-calendar .moag-calendar__header {
+	display: grid;
+	grid-template-columns: 60px 1fr 60px;
+	align-items: center;
+	margin-bottom: 30px;
+}
+
+#moag-calendar .moag-calendar__title {
+	margin: 0;
+	text-align: center;
+	color: inherit;
+	font-size: clamp(48px, 8vw, 74px);
+	line-height: 1;
+	font-weight: 500;
+	letter-spacing: 0.03em;
+}
+
+#moag-calendar .moag-calendar__nav {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 48px;
+	height: 48px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	font-size: 32px;
+	line-height: 1;
+	cursor: pointer;
+	transition: opacity 0.2s ease;
+}
+
+#moag-calendar .moag-calendar__nav--next {
+	justify-self: end;
+}
+
+#moag-calendar .moag-calendar__nav:hover {
+	opacity: 0.65;
+}
+
+#moag-calendar .moag-calendar__nav:disabled {
+	visibility: hidden;
+	pointer-events: none;
+}
+
+/* ------------------------------------------------------------
+   WEEKDAY HEADER
+   ------------------------------------------------------------ */
+
+#moag-calendar .moag-calendar__weekdays {
+	display: grid;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+	border-top: 1px solid currentColor;
+	border-left: 1px solid currentColor;
+}
+
+#moag-calendar .moag-calendar__weekday {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 0;
+	padding: 14px 8px;
+	border-right: 1px solid currentColor;
+	border-bottom: 1px solid currentColor;
+	text-align: center;
+	font-size: clamp(13px, 1.35vw, 20px);
+	line-height: 1;
+	font-weight: 600;
+	letter-spacing: 0.03em;
+	font-family: "adobe-jenson-pro-caption", serif;
+}
+
+/* ------------------------------------------------------------
+   MONTH GRID
+   ------------------------------------------------------------ */
+
+#moag-calendar .moag-calendar__grid {
+	display: grid;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+	border-left: 1px solid currentColor;
+}
+
+#moag-calendar .moag-calendar__day {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	min-height: 155px;
+	padding: 14px 12px 18px;
+	border-right: 1px solid currentColor;
+	border-bottom: 1px solid currentColor;
+}
+
+/* ------------------------------------------------------------
+   DATE NUMBER
+   ------------------------------------------------------------ */
+
+#moag-calendar .moag-calendar__date {
+	font-size: 14px;
+	line-height: 1;
+	font-weight: 400;
+	opacity: 0.75;
+	font-family: "adobe-jenson-pro-caption", serif;
+}
+
+/* ------------------------------------------------------------
+   CELL CONTENT
+   ------------------------------------------------------------ */
+
+#moag-calendar .moag-calendar__day-content {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 10px 0;
+	text-align: center;
+}
+
+/* ------------------------------------------------------------
+   SHOWTIMES
+   ------------------------------------------------------------ */
+
+#moag-calendar .moag-calendar__showtime {
+	display: block;
+	color: inherit;
+	font-size: clamp(22px, 2.25vw, 36px);
+	line-height: 1.05;
+	font-weight: 600;
+	text-decoration: none;
+	white-space: nowrap;
+	transition: opacity 0.2s ease;
+	font-family: "tt-ricks", serif;
+}
+
+#moag-calendar a.moag-calendar__showtime:hover {
+	opacity: 0.65;
+}
+
+/* ------------------------------------------------------------
+   DARK
+   ------------------------------------------------------------ */
+
+#moag-calendar .moag-calendar__dark {
+	display: block;
+	color: rgba(255, 255, 255, 0.55);
+	font-size: clamp(22px, 2.25vw, 36px);
+	line-height: 1;
+	font-weight: 600;
+	text-transform: uppercase;
+	font-family: "tt-ricks", serif;
+}
+
+/* ------------------------------------------------------------
+   TODAY
+   ------------------------------------------------------------ */
+
+#moag-calendar .moag-calendar__day--today
+	.moag-calendar__date {
+	font-weight: 700;
+	opacity: 1;
+}
+
+/* ------------------------------------------------------------
+   LOADING / ERROR
+   ------------------------------------------------------------ */
+
+#moag-calendar .moag-calendar__loading,
+#moag-calendar .moag-calendar__error {
+	padding: 40px 20px;
+	text-align: center;
+}
+
+/* ============================================================
+   TABLET
+   ============================================================ */
+
+@media (max-width: 900px) {
+
+	#moag-calendar .moag-calendar__header {
+		margin-bottom: 22px;
+	}
+
+	#moag-calendar .moag-calendar__weekday {
+		padding: 12px 4px;
+		font-size: 12px;
+	}
+
+	#moag-calendar .moag-calendar__day {
+		min-height: 125px;
+		padding: 10px 6px 14px;
+	}
+
+	#moag-calendar .moag-calendar__date {
+		font-size: 12px;
+	}
+
+	#moag-calendar .moag-calendar__showtime,
+	#moag-calendar .moag-calendar__dark {
+		font-size: clamp(16px, 2.5vw, 24px);
+	}
+
+}
+
+#moag-calendar .moag-calendar__date-weekday,
+#moag-calendar .moag-calendar__date-full {
+
+	display: none;
+
+}
+
+/* ============================================================
+   MOBILE
+   Performance list
+   ============================================================ */
+
+@media (max-width: 640px) {
+
+	/* --------------------------------------------------------
+	   MONTH HEADER
+	   -------------------------------------------------------- */
+
+	#moag-calendar .moag-calendar__header {
+		grid-template-columns: 44px 1fr 44px;
+		align-items: center;
+		margin-bottom: 24px;
+	}
+
+	#moag-calendar .moag-calendar__title {
+		font-size: 36px;
+		line-height: 1;
+	}
+
+	#moag-calendar .moag-calendar__nav {
+		width: 40px;
+		height: 40px;
+		font-size: 28px;
+	}
+
+	/* --------------------------------------------------------
+	   REMOVE DESKTOP CALENDAR HEADER
+	   -------------------------------------------------------- */
+
+	#moag-calendar .moag-calendar__weekdays {
+		display: none;
+	}
+
+	/* --------------------------------------------------------
+	   TURN MONTH GRID INTO LIST
+	   -------------------------------------------------------- */
+
+	#moag-calendar .moag-calendar__grid {
+		display: block;
+		border: 0;
+	}
+
+	/*
+	 * Don't display calendar filler cells.
+	 */
+	#moag-calendar .moag-calendar__day--outside {
+		display: none;
+	}
+
+	/*
+	 * For the ticket list, only dates containing actual
+	 * performances are shown.
+	 *
+	 * DARK dates remain part of the desktop calendar but
+	 * don't need to occupy space in the mobile ticket list.
+	 */
+	#moag-calendar .moag-calendar__day--dark,
+	#moag-calendar .moag-calendar__day--blank {
+		display: none;
+	}
+
+	/* --------------------------------------------------------
+	   PERFORMANCE ROW
+	   -------------------------------------------------------- */
+
+	#moag-calendar .moag-calendar__day--shows {
+		display: grid;
+		grid-template-columns: 86px minmax(0, 1fr);
+		align-items: stretch;
+
+		min-height: 0;
+		padding: 10px 0;
+
+		border: 0;
+		border-bottom: 1px solid currentColor;
+	}
+
+	#moag-calendar .moag-calendar__day--shows:first-child {
+		border-top: 1px solid currentColor;
+	}
+
+	/* --------------------------------------------------------
+	   DATE
+	   -------------------------------------------------------- */
+
+	#moag-calendar .moag-calendar__date {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: flex-start;
+
+		padding-right: 12px;
+
+		font-family: "adobe-jenson-pro-caption", serif;
+		line-height: 1;
+		opacity: 1;
+	}
+
+	/*
+	 * Desktop date number isn't needed in list mode.
+	 */
+	#moag-calendar .moag-calendar__date-number {
+		display: none;
+	}
+
+	#moag-calendar .moag-calendar__date-weekday {
+		display: block;
+
+		margin-bottom: 7px;
+
+		font-size: 11px;
+		font-weight: 400;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+	}
+
+	#moag-calendar .moag-calendar__date-full {
+		display: block;
+
+		font-size: 20px;
+		font-weight: 600;
+		letter-spacing: 0;
+		white-space: nowrap;
+	}
+
+	/* --------------------------------------------------------
+	   SHOWTIME AREA
+	   -------------------------------------------------------- */
+
+	#moag-calendar .moag-calendar__day-content {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		justify-content: center;
+
+		gap: 7px;
+		padding: 0;
+
+		text-align: center;
+	}
+
+	/* --------------------------------------------------------
+	   SHOWTIME BUTTONS
+	   -------------------------------------------------------- */
+
+	#moag-calendar .moag-calendar__showtime {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		width: 100%;
+		min-height: 58px;
+		padding: 10px 12px;
+
+		border: 1px solid currentColor;
+
+		color: inherit;
+
+		font-family: "tt-ricks", serif;
+		font-size: 20px;
+		font-weight: 600;
+		line-height: 1;
+
+		text-decoration: none;
+		white-space: nowrap;
+	}
+
+	#moag-calendar a.moag-calendar__showtime:hover {
+		opacity: 1;
+		background: currentColor;
+	}
+
+	/*
+	 * Because background uses currentColor on hover,
+	 * explicitly restore the section/background color here
+	 * if we decide we want the filled-button hover effect.
+
+	   For now we're leaving the standard opacity behavior
+	   available instead.
+	 */
+
+}

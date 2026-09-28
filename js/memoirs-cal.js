@@ -778,8 +778,25 @@
 		dateNumber.className =
 			'moag-calendar__date';
 
-		dateNumber.textContent =
-			date.getDate();
+        dateNumber.innerHTML =
+            `<span class="moag-calendar__date-weekday">` +
+            date
+                .toLocaleDateString('en-US', {
+                    weekday: 'short',
+                })
+                .toUpperCase() +
+            `</span>` +
+            `<span class="moag-calendar__date-full">` +
+            date
+                .toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                })
+                .toUpperCase() +
+            `</span>` +
+            `<span class="moag-calendar__date-number">` +
+            date.getDate() +
+            `</span>`;
 
 		cell.appendChild(
 			dateNumber
