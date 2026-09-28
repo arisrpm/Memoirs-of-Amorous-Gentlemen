@@ -3,13 +3,18 @@
    ============================================================ */
 
 #moag-calendar {
-	width: 100%;
 	color: var(--moag-text, #e72424);
+    padding: 0 1em;
+    max-width: 100%;
+    width: 1800px;
+    margin: 0 auto;    
     
 }
 
 #moag-calendar .moag-calendar__inner {
 	width: 100%;
+    background-image: url(https://images.squarespace-cdn.com/content/69fa2a5c97a26f5fe4c3a16d/244a6d78-6b26-4672-93c7-d42b95d1adec/cal-bg.jpg);
+    padding: 2em;    
 }
 
 /* ------------------------------------------------------------
@@ -384,7 +389,7 @@
 		justify-content: center;
 
 		width: 100%;
-		min-height: 58px;
+		min-height: 30x;
 		padding: 10px 12px;
 
 		border: 1px solid currentColor;
@@ -402,7 +407,7 @@
 
 	#moag-calendar a.moag-calendar__showtime:hover {
 		opacity: 1;
-		background: currentColor;
+		background: #000;
 	}
 
 	/*
