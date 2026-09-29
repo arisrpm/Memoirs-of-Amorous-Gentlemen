@@ -397,8 +397,22 @@
 		state.performancesByDate =
 			new Map();
 
+		const today =
+			getToday();
+
 		state.performances.forEach(
 			performance => {
+
+				/*
+				* Do not display performances from dates
+				* that have already passed.
+				*
+				* Today's performances remain visible.
+				*/
+				if (performance.date < today) {
+					return;
+				}
+
 				if (
 					!state.performancesByDate.has(
 						performance.dateKey
@@ -833,10 +847,11 @@
 		// --------------------------------------------------------
 
 		else if (
+			date >= getToday() &&
 			isWithinPerformanceRange(
 				date
-			)
-		) {
+			 )
+			) {
 			cell.classList.add(
 				'moag-calendar__day--dark'
 			);
