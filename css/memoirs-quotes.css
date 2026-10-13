@@ -1,0 +1,65 @@
+/* ============================================================
+   MEMOIRS — QUOTES ROTATOR
+   ============================================================ */
+
+#moag-quotes {
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* ------------------------------------------------------------
+   QUOTE ITEM
+   ------------------------------------------------------------ */
+
+.moag-quotes__item {
+  opacity: 0;
+
+  transition:
+    opacity 700ms ease-in-out;
+}
+
+.moag-quotes__item.is-visible {
+  opacity: 1;
+}
+
+/* ------------------------------------------------------------
+   QUOTE
+   ------------------------------------------------------------ */
+
+.moag-quotes__blockquote {
+  margin: 0;
+  padding: 0;
+}
+
+.moag-quotes__quote {
+  line-height: 1.4;
+}
+
+.moag-quotes__footer {
+  margin-top: 1rem;
+}
+
+.moag-quotes__author {
+  font-style: normal;
+}
+
+/* ------------------------------------------------------------
+   LOADING
+   ------------------------------------------------------------ */
+
+#moag-quotes.is-loading {
+  min-height: 150px;
+}
+
+/* ------------------------------------------------------------
+   REDUCED MOTION
+   ------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .moag-quotes__item {
+    transition: none;
+  }
+
+}
