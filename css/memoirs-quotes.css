@@ -34,9 +34,12 @@
 
 .moag-quotes__quote {
   line-height: 1.4;
+  font-family: "adobe-jenson-pro-caption", serif;
+  font-size: 35px;  
 }
 
 .moag-quotes__footer {
+  font-size: 22px;
   margin-top: 1rem;
 }
 
