@@ -28,7 +28,7 @@
       'Quotes',
 
     apiKey:
-      'HERE',
+      'AIzaSyD7t8x-ium7nbqFzQZ8M9-9bSVNfyqo9ek',
 
     selector:
       '#moag-quotes',
