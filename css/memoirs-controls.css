@@ -1,0 +1,111 @@
+/* ============================================================
+   MEMOIRS — SPLASH VIDEO CONTROLS
+   ============================================================ */
+
+#moag-splash {
+  position: relative;
+}
+
+/* ------------------------------------------------------------
+   CONTROLS CONTAINER
+   ------------------------------------------------------------ */
+
+.moag-splash__controls {
+  position: absolute;
+  right: 30px;
+  bottom: 30px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  z-index: 5;
+}
+
+/* ------------------------------------------------------------
+   CONTROL BUTTONS
+   ------------------------------------------------------------ */
+
+.moag-splash__control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 46px;
+  height: 46px;
+  padding: 0;
+
+  color: #fff;
+  background: rgba(0, 0, 0, 0.25);
+
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-radius: 50%;
+
+  cursor: pointer;
+
+  transition:
+    background 200ms ease,
+    border-color 200ms ease,
+    transform 200ms ease;
+}
+
+.moag-splash__control svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+/* Keep inactive SVG paths hidden */
+.moag-splash__control [hidden] {
+  display: none !important;
+}
+
+.moag-splash__control:hover {
+  background: rgba(0, 0, 0, 0.55);
+  border-color: #fff;
+}
+
+.moag-splash__control:active {
+  transform: scale(0.95);
+}
+
+.moag-splash__control:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 4px;
+}
+
+/* ------------------------------------------------------------
+   MOBILE
+   ------------------------------------------------------------ */
+
+@media (max-width: 767px) {
+
+  .moag-splash__controls {
+    right: 15px;
+    bottom: 15px;
+    gap: 8px;
+  }
+
+  .moag-splash__control {
+    width: 42px;
+    height: 42px;
+  }
+
+  .moag-splash__control svg {
+    width: 18px;
+    height: 18px;
+  }
+
+}
+
+/* ------------------------------------------------------------
+   REDUCED MOTION
+   ------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .moag-splash__control {
+    transition: none;
+  }
+
+}
