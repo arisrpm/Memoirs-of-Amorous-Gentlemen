@@ -56,9 +56,7 @@
 }
 
 .moag-splash__control svg [hidden] {
-
   display: none !important;
-
   visibility: hidden !important;
 
 }
