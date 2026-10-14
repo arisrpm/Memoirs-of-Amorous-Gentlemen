@@ -40,7 +40,7 @@
 
 .moag-quotes__footer {
   font-size: 22px;
-  margin-top: 1rem;
+  margin-top: 0;
 }
 
 .moag-quotes__author {
@@ -65,4 +65,23 @@
     transition: none;
   }
 
+}
+
+@media (max-width: 767px) {
+    #moag-quotes {
+        padding-top: 45px;
+    }
+}
+
+
+@media (max-width: 500px) {
+    .moag-quotes__quote {
+        line-height: 1;
+        font-size: 28px;
+        margin-bottom: 10px;
+    }
+
+    .moag-quotes__footer {
+        font-size: 16px;
+    }
 }
