@@ -3,6 +3,10 @@
 
   const MODULE = '[Memoirs Splash]';
 
+  // ------------------------------------------------------------
+  // INIT
+  // ------------------------------------------------------------
+
   const init = () => {
     const splash = document.querySelector('#moag-splash');
 
@@ -26,8 +30,6 @@
       return;
     }
 
-    splash.dataset.controlsInitialized = 'true';
-
     const playButton = controls.querySelector(
       '[data-action="play"]'
     );
@@ -40,11 +42,53 @@
       '[data-action="replay"]'
     );
 
+    if (!playButton || !muteButton || !replayButton) {
+      return;
+    }
+
+    const playIcon = playButton.querySelector(
+      '[data-icon="play"]'
+    );
+
+    const pauseIcon = playButton.querySelector(
+      '[data-icon="pause"]'
+    );
+
+    const mutedIcon = muteButton.querySelector(
+      '[data-icon="muted"]'
+    );
+
+    const volumeIcon = muteButton.querySelector(
+      '[data-icon="volume"]'
+    );
+
+    if (!playIcon || !pauseIcon || !mutedIcon || !volumeIcon) {
+      return;
+    }
+
+    splash.dataset.controlsInitialized = 'true';
+
     const mediaQuery = window.matchMedia(
       '(max-width: 767px)'
     );
 
     let activeVideo = null;
+
+    // ----------------------------------------------------------
+    // PREPARE SVG ICONS
+    // ----------------------------------------------------------
+
+    // Remove HTML hidden attributes from SVG paths.
+    // JavaScript will control visibility using display instead.
+
+    [
+      playIcon,
+      pauseIcon,
+      mutedIcon,
+      volumeIcon
+    ].forEach(icon => {
+      icon.removeAttribute('hidden');
+    });
 
     // ----------------------------------------------------------
     // GET ACTIVE VIDEO
@@ -59,36 +103,55 @@
     // ----------------------------------------------------------
 
     const updateControls = () => {
-    if (!activeVideo) {
+      if (!activeVideo) {
         return;
-    }
+      }
 
-    const isPaused = activeVideo.paused || activeVideo.ended;
-    const isMuted = activeVideo.muted;
+      const isPaused =
+        activeVideo.paused || activeVideo.ended;
 
-    // Play / Pause
-    playButton.setAttribute(
+      const isMuted =
+        activeVideo.muted || activeVideo.volume === 0;
+
+      // --------------------------------------------------------
+      // PLAY / PAUSE ICON
+      // --------------------------------------------------------
+
+      playButton.setAttribute(
         'aria-label',
         isPaused ? 'Play video' : 'Pause video'
-    );
+      );
 
-    const playIcon = playButton.querySelector('[data-icon="play"]');
-    const pauseIcon = playButton.querySelector('[data-icon="pause"]');
+      playButton.setAttribute(
+        'title',
+        isPaused ? 'Play video' : 'Pause video'
+      );
 
-    playIcon.style.display = isPaused ? '' : 'none';
-    pauseIcon.style.display = isPaused ? 'none' : '';
+      playIcon.style.display =
+        isPaused ? 'block' : 'none';
 
-    // Mute / Unmute
-    muteButton.setAttribute(
+      pauseIcon.style.display =
+        isPaused ? 'none' : 'block';
+
+      // --------------------------------------------------------
+      // MUTE / UNMUTE ICON
+      // --------------------------------------------------------
+
+      muteButton.setAttribute(
         'aria-label',
         isMuted ? 'Unmute video' : 'Mute video'
-    );
+      );
 
-    const mutedIcon = muteButton.querySelector('[data-icon="muted"]');
-    const volumeIcon = muteButton.querySelector('[data-icon="volume"]');
+      muteButton.setAttribute(
+        'title',
+        isMuted ? 'Unmute video' : 'Mute video'
+      );
 
-    mutedIcon.style.display = isMuted ? '' : 'none';
-    volumeIcon.style.display = isMuted ? 'none' : '';
+      mutedIcon.style.display =
+        isMuted ? 'block' : 'none';
+
+      volumeIcon.style.display =
+        isMuted ? 'none' : 'block';
     };
 
     // ----------------------------------------------------------
@@ -139,9 +202,8 @@
         return;
       }
 
-      activeVideo.currentTime = 0;
-
       try {
+        activeVideo.currentTime = 0;
         await activeVideo.play();
       } catch (error) {
         console.warn(
@@ -158,14 +220,18 @@
     // ----------------------------------------------------------
 
     [desktop, mobile].forEach(video => {
-      ['play', 'pause', 'ended', 'volumechange'].forEach(
-        eventName => {
-          video.addEventListener(
-            eventName,
-            updateControls
-          );
-        }
-      );
+      [
+        'play',
+        'pause',
+        'ended',
+        'volumechange',
+        'loadedmetadata'
+      ].forEach(eventName => {
+        video.addEventListener(
+          eventName,
+          updateControls
+        );
+      });
     });
 
     // ----------------------------------------------------------
@@ -177,7 +243,10 @@
 
       activeVideo = getActiveVideo();
 
-      if (previousVideo && previousVideo !== activeVideo) {
+      if (
+        previousVideo &&
+        previousVideo !== activeVideo
+      ) {
         previousVideo.pause();
       }
 
@@ -190,7 +259,9 @@
         handleViewportChange
       );
     } else {
-      mediaQuery.addListener(handleViewportChange);
+      mediaQuery.addListener(
+        handleViewportChange
+      );
     }
 
     // ----------------------------------------------------------
@@ -199,16 +270,23 @@
 
     activeVideo = getActiveVideo();
 
-    // Stop hidden video from playing.
+    // Pause the video hidden by the current breakpoint.
     const inactiveVideo =
       activeVideo === desktop ? mobile : desktop;
 
     inactiveVideo.pause();
 
+    // Set the initial icon states.
     updateControls();
 
-    console.log(`${MODULE} Controls initialized.`);
+    console.log(
+      `${MODULE} Controls initialized successfully.`
+    );
   };
+
+  // ------------------------------------------------------------
+  // START
+  // ------------------------------------------------------------
 
   if (document.readyState === 'loading') {
     document.addEventListener(
