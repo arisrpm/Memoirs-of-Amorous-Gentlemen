@@ -59,40 +59,36 @@
     // ----------------------------------------------------------
 
     const updateControls = () => {
-      if (!activeVideo) {
+    if (!activeVideo) {
         return;
-      }
+    }
 
-      const isPaused = activeVideo.paused || activeVideo.ended;
-      const isMuted = activeVideo.muted;
+    const isPaused = activeVideo.paused || activeVideo.ended;
+    const isMuted = activeVideo.muted;
 
-      // Play / Pause
-      playButton.setAttribute(
+    // Play / Pause
+    playButton.setAttribute(
         'aria-label',
         isPaused ? 'Play video' : 'Pause video'
-      );
+    );
 
-      playButton.querySelector(
-        '[data-icon="play"]'
-      ).hidden = !isPaused;
+    const playIcon = playButton.querySelector('[data-icon="play"]');
+    const pauseIcon = playButton.querySelector('[data-icon="pause"]');
 
-      playButton.querySelector(
-        '[data-icon="pause"]'
-      ).hidden = isPaused;
+    playIcon.style.display = isPaused ? '' : 'none';
+    pauseIcon.style.display = isPaused ? 'none' : '';
 
-      // Mute / Unmute
-      muteButton.setAttribute(
+    // Mute / Unmute
+    muteButton.setAttribute(
         'aria-label',
         isMuted ? 'Unmute video' : 'Mute video'
-      );
+    );
 
-      muteButton.querySelector(
-        '[data-icon="muted"]'
-      ).hidden = !isMuted;
+    const mutedIcon = muteButton.querySelector('[data-icon="muted"]');
+    const volumeIcon = muteButton.querySelector('[data-icon="volume"]');
 
-      muteButton.querySelector(
-        '[data-icon="volume"]'
-      ).hidden = isMuted;
+    mutedIcon.style.display = isMuted ? '' : 'none';
+    volumeIcon.style.display = isMuted ? 'none' : '';
     };
 
     // ----------------------------------------------------------

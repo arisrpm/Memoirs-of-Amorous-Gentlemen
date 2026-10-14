@@ -13,7 +13,7 @@
 .moag-splash__controls {
   position: absolute;
   right: 30px;
-  bottom: 30px;
+  top: 30px;
 
   display: flex;
   align-items: center;
@@ -53,6 +53,14 @@
   display: block;
   width: 20px;
   height: 20px;
+}
+
+.moag-splash__control svg [hidden] {
+
+  display: none !important;
+
+  visibility: hidden !important;
+
 }
 
 /* Keep inactive SVG paths hidden */
