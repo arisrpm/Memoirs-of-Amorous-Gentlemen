@@ -14,7 +14,8 @@
 #moag-calendar .moag-calendar__inner {
 	width: 100%;
     background-image: url(https://images.squarespace-cdn.com/content/69fa2a5c97a26f5fe4c3a16d/244a6d78-6b26-4672-93c7-d42b95d1adec/cal-bg.jpg);
-    padding: 2em;    
+    padding: 2em; 
+	margin-top: 1em;   
 }
 
 /* ------------------------------------------------------------
