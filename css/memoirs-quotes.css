@@ -76,6 +76,9 @@
     #moag-quotes {
         padding-top: 45px;
     }
+    .moag-quotes__item {
+        min-height: auto;
+    }
 }
 
 
