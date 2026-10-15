@@ -3,9 +3,14 @@
    ============================================================ */
 
 #moag-quotes {
-  width: 100%;
-  margin: 0 auto;
-  text-align: center;
+    width: 100%;
+    margin: 0 auto;
+    text-align: center;
+    max-width: 1200px;
+    padding: 2em 0 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 /* ------------------------------------------------------------
@@ -14,7 +19,7 @@
 
 .moag-quotes__item {
   opacity: 0;
-
+  min-height: 150px;
   transition:
     opacity 700ms ease-in-out;
 }
