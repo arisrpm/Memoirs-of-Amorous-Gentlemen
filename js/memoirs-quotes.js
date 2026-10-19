@@ -34,7 +34,7 @@
       '#moag-quotes',
 
     // Time each quote remains fully visible.
-    displayDuration: 5500,
+    displayDuration: 4000,
 
     // Fade-out and fade-in duration (each).
     fadeDuration: 700,
